@@ -1,0 +1,104 @@
+<!doctype html>
+<!--
+	 ____     __                          __          ___   ___                
+	/\  _`\  /\ \      __                /\ \      __/\_ \ /\_ \               
+	\ \ \/\_\\ \ \___ /\_\    ___     ___\ \ \___ /\_\//\ \\//\ \      __      
+	 \ \ \/_/_\ \  _ `\/\ \ /' _ `\  /'___\ \  _ `\/\ \\ \ \ \ \ \   /'__`\    
+	  \ \ \L\ \\ \ \ \ \ \ \/\ \/\ \/\ \__/\ \ \ \ \ \ \\_\ \_\_\ \_/\ \L\.\_  
+	   \ \____/ \ \_\ \_\ \_\ \_\ \_\ \____\\ \_\ \_\ \_\\____\\____\ \__/.\_\ 
+	    \/___/   \/_/\/_/\/_/\/_/\/_/\/____/ \/_/\/_/\/_//____//____/\/__/\/_/ 
+		everything should be this easy!
+-->
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="translucent black" />
+		<meta name="format-detection" content="telephone=yes" />
+		<link rel="apple-touch-startup-image" href="<?php echo resource::url_for("startup.png");?>" />
+		<link rel="icon" type="image/png" href="<?php echo resource::url_for("apple-touch-icon.png");?>" />
+		<link rel="apple-touch-icon" href="<?php echo resource::url_for("apple-touch-icon.png");?>" />
+		<link rel="apple-touch-icon" href="<?php echo resource::url_for("apple-touch-icon-ipad.png");?>" sizes="72x72" />
+		<link rel="apple-touch-icon" href="<?php echo resource::url_for("apple-touch-icon-iphone4.png");?>" sizes="114x114" />
+		<link rel="icon" type="image/png" href="<?php echo resource::url_for("apple-touch-icon.png");?>" />	
+		<title><?php echo site::$member->name . ":$title";?></title>
+		<meta name="author" content="Joey Guerra" />
+		<meta name="keywords" content="<?php echo $keywords;?>" />
+		<meta name="description" content="<?php echo $description;?>" />
+		<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link rel="stylesheet" type="text/css" href="<?php echo theme_controller::url_for("css/default.css");?>" />
+		<link href="http://fonts.googleapis.com/css?family=Bowlby+One+SC" rel="stylesheet" type="text/css" />
+		<?php echo $css;?>
+	</head>
+    <body class="<?php echo $resource_name;?>" style="<?php echo site::$member->settings()->background_url !== null ? "background-image: url(" . site::$member->settings()->background_url . ");" : null;?>">
+		<header>
+			<h1><a href="<?php echo resource::url_for(null);?>" title="<?php echo (site::$member->colophon !== null ? site::$member->colophon : site::$member->name . " 6d site.");?>"><?php echo site::$member->name;?></a></h1>
+			<p><?php echo (site::$member->colophon !== null ? site::$member->colophon : null);?></p>
+		</header>
+		<section>
+			<header>
+				<div id="user_message" style="<?php echo view::get_user_message() === null ? 'display: none;' : null;?>"><?php echo view::get_user_message();?></div>
+				<nav>
+					<?php if(auth_controller::is_authed()):?>
+					<a href="javascript:void(0);" title="edit" id="edit_link">Edit</a>
+					<a href="<?php echo resource::url_for("signout");?>" title="signout" id="signout_controller">Signout</a>
+					<?php else:?>
+					<a href="<?php echo resource::url_for("signin");?>" title="signin">signin</a>
+					<?php endif;?>
+				</nav>
+			</header>
+			<article>
+				<?php echo $output;?>
+			</article>
+		</section>
+		<footer>
+		</footer>
+		<?php if(auth_controller::is_authed()):?>
+		<section id="info" class="draggable tab_bar">
+			<button type="button" class="close">close</button>
+			<header></header>
+			<div class="view" id="display" style="display: none;">
+				<section>
+					<header>Background</header>
+					<aside></aside>
+					<ul></ul>
+					<form action="<?php echo resource::url_for("photos");?>" method="post">
+						<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
+						<input type="file" multiple name="files" />
+						<input type="hidden" name="image_src" value="" />				    
+					</form>
+					<footer></footer>
+				</section>
+			</div>
+			<div class="view" id="settings" style="display: none;">
+				<section>
+					<header>Settings</header>
+					<aside></aside>
+					<form action="<?php echo resource::url_for("settings");?>" method="post">
+						<fieldset>
+							<legend>Profile</legend>
+							<div>
+								<label id="member_colophon">About you</label>
+								<textarea name="member[colophon]" placeholder="About you" cols="23"><?php echo auth_controller::current_user()->colophon;?></textarea>
+							</div>
+							<div>
+								<label for="member_in_directory">In Directory?</label>
+								<input type="checkbox" name="member[in_directory]" value="true" id="member_in_directory"<?php echo auth_controller::current_user()->in_directory ? " checked" : null;?> />
+							</div>
+						</fieldset>
+					</form>
+					<footer></footer>
+				</section>
+			</div>
+			<footer class="tabs">
+				<a href="<?php echo resource::url_for("photo_browser");?>" title="photo browser" id="photo_browser_controller">display</a>
+				<a href="<?php echo resource::url_for("settings");?>" title="settings" id="settings_controller">settings</a>
+			</footer>
+		</section>
+		<?php endif;?>
+	</body>
+	<script type="text/javascript" src="<?php echo resource::url_for("js/default.js");?>"></script>
+	<?php echo $js;?>
+</html>

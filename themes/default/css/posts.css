@@ -1,0 +1,6 @@
+#posts-list li article header.private{
+	background: transparent url("../images/private_icon.png") right 0 no-repeat;
+}
+#posts-list li article header.public{
+	background: transparent url("../images/public_icon.png") right 0 no-repeat;
+}

@@ -1,0 +1,12 @@
+<article>
+	<h1><?php echo $member->name;?></h1>
+	<?php if($member->photo_url !== null):?>
+	<img src="<?php echo $member->photo_url;?>" />
+	<?php endif;?>
+	<?php if(auth_controller::current_user() !== null && $member->id === auth_controller::current_user()->id):?>
+	<form action="<?php resource::url_for("profile");?>" method="post">
+		<input type="hidden" value="edit" name="state" />
+		<button type="submit">Edit your profile info</button>
+	</form>
+	<?php endif;?>
+</article>

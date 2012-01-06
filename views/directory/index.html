@@ -1,0 +1,13 @@
+<h1>Directory</h1>
+<ul>
+<?php foreach($members as $member):?>
+	<li>
+		<img src="<?php echo $member->photo_url;?>" alt="<?php echo $member->name;?>" class="avatar" />
+		<h2><?php echo $member->name;?></h2>
+		<form action="<?php echo resource::url_for("follow");?>" method="post">
+			<input type="hidden" name="member[id]" value="<?php echo $member->id;?>" />
+			<button type="submit">Follow</button>
+		</form>
+	</li>
+<?php endforeach;?>
+</ul>

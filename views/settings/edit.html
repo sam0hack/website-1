@@ -1,0 +1,52 @@
+<article>
+	<h2><?php echo $member->name;?></h2>
+	<img id="profile_photo" src="<?php echo $member->photo_url;?>" />
+	<form id="file_upload" action="<?php echo resource::url_for("files");?>" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
+	    <input type="file" name="files[]" />
+	    <button type="submit">Upload</button>
+	</form>
+	<ul id="file_list"></ul>
+	<p id="status"></p>
+	<progress id="progress" value="0" max="100"></progress>
+	<form action="<?php echo resource::url_for("profile");?>" method="post">
+		<fieldset>
+			<legend>Edit your profile</legend>
+			<input type="hidden" name="member[photo_url]" value="<?php echo $member->photo_url;?>" id="photo_url" />
+			<input type="hidden" name="member[id]" value="<?php echo $member->id;?>" id="member[id]" />
+			<div>
+				<label for="member[name]">Your parents call you</label>
+				<input type="text" value="<?php echo $member->name;?>" name="member[name]" id="member[name]" />
+			</div>
+			<div>
+				<label for="member[email]">Folks can email you at</label>
+				<input type="email" value="<?php echo $member->email;?>" name="member[email]" id="member[email]" />
+			</div>
+			<div>
+				<label for="member[signin]">You signin to the site as</label>
+				<input type="text" value="<?php echo $member->signin;?>" name="member[signin]" id="member[signin]" />
+			</div>
+			<div>
+				<label for="member[colophon]">You want people to know about you</label>
+				<textarea name="member[colophon]"><?php echo $member->colophon;?></textarea>
+			</div>
+			<div>
+				<label for="member[in_directory]">Do you want to be publicly listed in the directory?</label>
+				<input type="radio" value="true" name="member[in_directory]" id="yes_in_directory"<?php echo $member->in_directory ? " checked" : null;?> />
+				<label for="yes_in_directory">Yes</label>
+				<input type="radio" value="false" name="member[in_directory]" id="no_in_directory"<?php echo !$member->in_directory ? " checked" : null;?> />
+				<label for="no_in_directory">No</label>
+			</div>
+		</fieldset>
+		<input type="hidden" name="_method" value="put" />
+		<button type="submit">Save</button>
+	</form>
+</article>
+<script src="<?php echo theme_controller::url_for("js/FormController.js");?>"></script>
+<script>
+	window.onload = function () {
+		if (typeof FormData == "undefined") alert("Sorry, your browser is stopping you from uploading a profile pict. You need to upgrade to a modern browser. It's time.");
+		var form = document.getElementById("file_upload");
+		var controller = new sixd.controller.form(form, {successful_message: "Save your profile information for the new photo to take effect."});
+	}
+</script>

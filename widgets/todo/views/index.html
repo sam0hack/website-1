@@ -1,0 +1,20 @@
+<article>
+    <div id="todoapp" class="view">
+        <header>
+            <h1>Todos</h1>
+        </header>
+		<article>
+			<input id="new-todo" placeholder="What needs to be done?" type="text" />
+			<button type="button" class="tip" id="add_button">hit enter</button>
+            <ul id="todos"></ul>
+        </article>
+        <footer>
+        	<p id="todo-stats"></p>
+        </footer>
+    </div>
+</article>
+<footer class="credits">
+	<label for="settings.persist">Persist <input type="checkbox" value="true" id="settings.persist" /></label>
+	<p>Created by <a href="http://www.joeyguerra.com/" title="Joey Guerra">Joey Guerra</a></p>
+</footer>
+<script type="text/javascript" src="<?php echo resource::url_for("js/index.js");?>"></script>

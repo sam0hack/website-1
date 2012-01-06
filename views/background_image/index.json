@@ -1,0 +1,1 @@
+{"background_url": "<?php echo site::$member->settings()->background_url;?>"}

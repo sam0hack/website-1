@@ -1,0 +1,74 @@
+textarea{
+	width: 93%;
+}
+
+#title{
+	display: block;
+	width: 94%;
+}
+#settings{
+	position: fixed;
+	top: 50px;
+	right: 5px;
+	width: 200px;
+	background: #f2f2f2;
+	border: solid 1px #ccc;
+	font-size: .9em;
+}
+a.icon span{
+	display: block;
+	font-size: .7em;
+	color: #777;
+	text-align: center;
+	margin-top: 20px;
+}
+a.icon{
+	margin-top: -20px;
+	position: relative;
+	width: 75px;
+	float: right;
+	text-decoration: none;
+	padding: 0;
+}
+a.icon:hover{
+	text-decoration: none;
+	text-shadow: none;
+	color: inherit;
+}
+fieldset p label a.not_home{
+	background: transparent url("../images/home_icon.png") center 0 no-repeat;
+}
+
+fieldset p label a.home{
+	background: transparent url("../images/not_home_icon.png") center 0 no-repeat;
+}
+fieldset p label a.public{
+	background: transparent url("../images/public_icon.png") center 0 no-repeat;
+}
+fieldset p label a.private{
+	background: transparent url("../images/private_icon.png") center 0 no-repeat;
+}
+
+#panel{
+	position: fixed;
+	right: -200px;
+	top: 50px;
+	overflow: hidden;
+}
+#panel ul{
+	float: left;
+	list-style: none;
+}
+#panel ul li a{
+	text-decoration: none;
+	border: solid 1px #ccc;
+	margin-top: 56px;
+	margin-right: -30px;
+	-webkit-transform: rotate(-90deg); 
+	-moz-transform: rotate(-90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+	display: block;
+	padding: 0;
+	width: 80px;
+	text-align: center;
+}
