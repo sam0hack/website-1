@@ -145,6 +145,8 @@ body{
 	border-radius: 5px;
 	padding: 5px;
 	display: none;
+	z-index: 10000;
+	color: white;
 }
 #display ul{
 	overflow: auto;
@@ -153,7 +155,7 @@ body{
 }
 #display ul li{
 	float: left;
-	width: 95px;
+	width: 93px;
 	height: 100px;
 	overflow: hidden;
 	text-align: center;
