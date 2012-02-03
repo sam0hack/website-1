@@ -73,7 +73,9 @@ class storage{
 		});
 		return $this->schema;
 	}
-	
+	function get_errors(){
+		return $this->provider->errorInfo();
+	}
 	function create_from($col){
 		$schema = $this->get_schema();
 		$obj = new stdClass();

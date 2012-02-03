@@ -77,6 +77,7 @@ class not_found_exception extends Exception{
 	public $method;
 }
 class auth_controller{
+	static $current_user;
 	function before_calling_http_method($publisher, $info){
 		$secured = array("members", "posts");
 		if(in_array($publisher->resource_name, $secured)){
@@ -87,6 +88,9 @@ class auth_controller{
 			}
 		}
 	}
+	function begin_request($publisher, $info){
+		self::$current_user = storage::find_members_one(array("where"=>"hash=:hash", "args"=>array("hash"=>self::get_chin_auth())));
+	}	
 	private static function create_key($name, $expiry){
 		return hash("sha256", $name . $_SERVER["REMOTE_ADDR"] . $expiry, false);
 	}
@@ -98,7 +102,7 @@ class auth_controller{
 		$_COOKIE["chin_auth"] = $value;
 	}
 	static function signin($signin, $password){
-		$member = self::current_user();
+		$member = self::$current_user;
 		if($member === null) $member = storage::find_members_one(array("where"=>"signin=:signin and password=:password","args"=>array("signin"=>$signin, "password"=>string::password($password))));
 		if($member === null) return null;
 		self::set_authed($member);
@@ -109,10 +113,6 @@ class auth_controller{
 	}
 	static function signout(){
 		self::set_chin_auth(null, time()-3600);
-	}
-	static function current_user(){
-		$member = storage::find_members_one((object)array("where"=>"hash=:hash", "args"=>array("hash"=>self::get_chin_auth())));
-		return $member;
 	}
 	private static function set_authed($member){
 		$expiry = 0;
@@ -417,7 +417,6 @@ class request{
 			$this->put = $this->map();
 			if($this->put !== null){
 				foreach($this->put as $k=>$v){
-					console::log("$k=$v");
 					if($v === "true") $v = true;
 					if($v === "false") $v = false;
 					// 01-04-2012, jguerra: Parse data passed as an array like <input type="text" name="member[colophon]" />
@@ -485,6 +484,11 @@ class theme_controller{
 		return resource::url_for("themes/$theme/$file", $data);
 	}
 	function should_set_css_path($publisher, $info){
+		$path = "themes/" . self::get_theme() . "/$info";
+		if(file_exists($path)) return $path;
+		return $info;
+	}
+	function should_set_js_path($publisher, $info){
 		$path = "themes/" . self::get_theme() . "/$info";
 		if(file_exists($path)) return $path;
 		return $info;
