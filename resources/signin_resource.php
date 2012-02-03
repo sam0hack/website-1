@@ -10,6 +10,7 @@ class signin_resource extends app_resource{
 		return layout::render("default", $this);
 	}
 	function POST($signin, $password){
+		$signin = strtolower($signin);
 		$member = auth_controller::signin($signin, $password);
 		if($member !== null){
 			if(in_array($this->url->file_type, array("html"))) self::redirect(null);

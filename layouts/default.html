@@ -34,70 +34,104 @@
 	</head>
     <body class="<?php echo $resource_name;?>" style="<?php echo site::$member->settings()->background_url !== null ? "background-image: url(" . site::$member->settings()->background_url . ");" : null;?>">
 		<header>
-			<h1><a href="<?php echo resource::url_for(null);?>" title="<?php echo (site::$member->colophon !== null ? site::$member->colophon : site::$member->name . " 6d site.");?>"><?php echo site::$member->name;?></a></h1>
+			<h1><a href="<?php echo app_resource::url_for_member(null);?>" title="<?php echo (site::$member->colophon !== null ? site::$member->colophon : site::$member->name . " 6d site.");?>"><?php echo site::$member->name;?></a></h1>
 			<p><?php echo (site::$member->colophon !== null ? site::$member->colophon : null);?></p>
+			<?php if(site::$member->settings()->logo_url !== null):?>
+			<img src="<?php echo site::$member->settings()->logo_url;?>" alt="<?php echo site::$member->name;?>'s Logo" />
+			<?php endif;?>
 		</header>
 		<section>
 			<header>
 				<div id="user_message" style="<?php echo view::get_user_message() === null ? 'display: none;' : null;?>"><?php echo view::get_user_message();?></div>
+			</header>
+			<?php echo $output;?>
+			<?php if(auth_controller::is_authed()):?>
+			<section id="post" class="draggable">
+				<button type="button" class="close">&otimes;</button>
+				<header>Post</header>
+				<aside></aside>
+				<form action="<?php echo resource::url_for("posts");?>" method="post">
+					<fieldset>
+						<legend>Short and Sweet</legend>
+						<div>
+							<label for="post_body">Message</label>
+							<textarea cols="22" name="post[body]" id="post_body" placeholder="Write something in here"></textarea>
+						</div>
+						<input type="hidden" name="post[type]" value="tweet" />
+						<input type="hidden" name="post[status]" value="public" />
+						<footer>
+							<button type="submit">Post</button>
+						</footer>
+					</fieldset>
+				</form>
+				<footer></footer>
+			</section>
+			<section id="info" class="draggable tab_bar">
+				<button type="button" class="close">&otimes;</button>
+				<header></header>
+				<div class="view" id="display" style="display: none;">
+					<section>
+						<header>Background</header>
+						<aside></aside>
+						<ul></ul>
+						<form action="<?php echo resource::url_for("photos");?>" method="post">
+							<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
+							<input type="file" multiple name="files" />
+							<input type="hidden" name="image_src" value="" />				    
+						</form>
+						<footer></footer>
+					</section>
+				</div>
+				<div class="view" id="settings" style="display: none;">
+					<section>
+						<header>Settings</header>
+						<aside></aside>
+						<form action="<?php echo resource::url_for("settings");?>" method="post">
+							<fieldset>
+								<legend>Profile</legend>
+								<div>
+									<label id="member_colophon">About you</label>
+									<textarea name="member[colophon]" placeholder="About you" cols="22"><?php echo auth_controller::current_user()->colophon;?></textarea>
+								</div>
+								<div>
+									<label for="member_in_directory">In Directory?</label>
+									<input type="checkbox" name="member[in_directory]" value="true" id="member_in_directory"<?php echo auth_controller::current_user()->in_directory ? " checked" : null;?> />
+								</div>
+							</fieldset>
+						</form>
+						<footer></footer>
+					</section>
+				</div>
+				<footer class="tabs">
+					<a href="<?php echo resource::url_for("photo_browser");?>" title="photo browser" id="photo_browser_controller">display</a>
+					<a href="<?php echo resource::url_for("settings");?>" title="settings" id="settings_controller">settings</a>
+				</footer>
+			</section>
+			<?php endif;?>
+			
+			<aside>
+				<header></header>
+				<?php class_exists("post") || require("models/post.php");?>
+				<?php $tweets = post::find("select p.ROWID as id, p.title, p.body, p.publish_date, m.name as author from posts p inner join members m on m.ROWID = p.owner_id where p.owner_id = :owner_id and p.status='public' and p.publish_date <= current_timestamp order by p.publish_date desc", array("owner_id"=>site::$member->id));?>
+				<?php foreach($tweets as $tweet):?>
+				<article>
+					<p><?php echo $tweet->body;?></p>
+					<footer><time datetime="<?php echo date("Y-m-d", $tweet->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $tweet->publish_date);?> GMT</time></footer>
+				</article>
+				<?php endforeach;?>
+			</aside>
+			<footer>
 				<nav>
 					<?php if(auth_controller::is_authed()):?>
+					<a href="javascript:void(0);" title="post" id="post_link">write</a>
 					<a href="javascript:void(0);" title="edit" id="edit_link">Edit</a>
 					<a href="<?php echo resource::url_for("signout");?>" title="signout" id="signout_controller">Signout</a>
 					<?php else:?>
 					<a href="<?php echo resource::url_for("signin");?>" title="signin">signin</a>
 					<?php endif;?>
 				</nav>
-			</header>
-			<article>
-				<?php echo $output;?>
-			</article>
-		</section>
-		<footer>
-		</footer>
-		<?php if(auth_controller::is_authed()):?>
-		<section id="info" class="draggable tab_bar">
-			<button type="button" class="close">close</button>
-			<header></header>
-			<div class="view" id="display" style="display: none;">
-				<section>
-					<header>Background</header>
-					<aside></aside>
-					<ul></ul>
-					<form action="<?php echo resource::url_for("photos");?>" method="post">
-						<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
-						<input type="file" multiple name="files" />
-						<input type="hidden" name="image_src" value="" />				    
-					</form>
-					<footer></footer>
-				</section>
-			</div>
-			<div class="view" id="settings" style="display: none;">
-				<section>
-					<header>Settings</header>
-					<aside></aside>
-					<form action="<?php echo resource::url_for("settings");?>" method="post">
-						<fieldset>
-							<legend>Profile</legend>
-							<div>
-								<label id="member_colophon">About you</label>
-								<textarea name="member[colophon]" placeholder="About you" cols="23"><?php echo auth_controller::current_user()->colophon;?></textarea>
-							</div>
-							<div>
-								<label for="member_in_directory">In Directory?</label>
-								<input type="checkbox" name="member[in_directory]" value="true" id="member_in_directory"<?php echo auth_controller::current_user()->in_directory ? " checked" : null;?> />
-							</div>
-						</fieldset>
-					</form>
-					<footer></footer>
-				</section>
-			</div>
-			<footer class="tabs">
-				<a href="<?php echo resource::url_for("photo_browser");?>" title="photo browser" id="photo_browser_controller">display</a>
-				<a href="<?php echo resource::url_for("settings");?>" title="settings" id="settings_controller">settings</a>
 			</footer>
 		</section>
-		<?php endif;?>
 	</body>
 	<script type="text/javascript" src="<?php echo resource::url_for("js/default.js");?>"></script>
 	<?php echo $js;?>

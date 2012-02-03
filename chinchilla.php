@@ -6,6 +6,7 @@ class output_compressor{
 		return string::strip_whitespace($output);
 	}
 }
+class chinchilla{}
 class console{
 	static function log($v){
 		if(is_object($v)) $v = json_encode($v);
@@ -542,6 +543,10 @@ class view{
 		return stripslashes($_COOKIE["user_message"]);
 	}
 	static function render($view, $resource, $args = null){
+		set_error_handler(function($code, $message, $file, $line, $context){
+			$status = new http_status(array("code"=>500, "message"=>"$message"));
+			resource::send_status($status);
+		});
 		$view = "views/$view." . $resource->url->file_type;
 		ob_start();
 		extract(get_object_vars($resource));
@@ -553,9 +558,10 @@ class view{
 				$view = str_replace(".phtml", ".html", $view);
 			}
 		}
-		require($view);
+		require($view);	
 		$output = ob_get_clean();
 		$output = filter_center::publish("after_rendering_view", $resource, $output);
+		restore_error_handler();
 		return $output;
 	}
 }

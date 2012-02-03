@@ -322,5 +322,6 @@ chin.device = (function(){
 	self.CHANGE = "change";
 	self.SCROLL = "scroll";
 	self.FOCUS = "focus";
+	self.SUBMIT = "submit";
 	return self;
 })();

@@ -10,6 +10,9 @@ ErrorDocument 404 index.php
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^$ index.php [QSA]
 
+# block access to sqlite data file
+RewriteRule \.sqlite notfound [QSA,L]
+
 #file_check_start
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

@@ -9,15 +9,12 @@ function error_handler($code, $message, $file, $line, $context){
 	view::set_user_message($value);
 }
 function exception_handler($e){
-	view::set_user_message($e->getMessage());
+	echo $e;
+	view::set_user_message($e);
 }
-function storage_provider(){
-	return "sixd.sqlite";//"data.sqlite";
-}
-
-require("chinchilla.php");
-require("storage.php");
-require("models/member.php");
+class_exists("chinchilla") || require("chinchilla.php");
+class_exists("storage") || require("storage.php");
+class_exists("mmember") || require("models/member.php");
 class site{
 	static $member;
 	static $path;
@@ -50,19 +47,22 @@ class site{
 class repo{
 	function __construct(){}
 	private $connection_string;
+	function need_storage_connection_string($publisher, $info){
+		return resource::get_absolute_path("sixd.sqlite");
+	}
 	function should_save_post($publisher, $post){
-		$db = new storage(array("table_name"=>"posts", "primary_key_field"=>"id", "connection_string"=>storage_provider()));
+		$db = new storage(array("table_name"=>"posts", "primary_key_field"=>"id", "connection_string"=>filter_center::publish("need_storage_connection_string", $this, "sixd.sqlite")));
 		$db->save(array($post));
 	}
 	function should_save_story($publisher, $story){
-		$db = new storage(array("table_name"=>"stories", "primary_key_field"=>"id", "connection_string"=>storage_provider()));
+		$db = new storage(array("table_name"=>"stories", "primary_key_field"=>"id", "connection_string"=>filter_center::publish("need_storage_connection_string", $this, "sixd.sqlite")));
 		$db->save(array($story));
 	}
 	function should_save_member($publisher, $member){
 		if($member->settings() !== null){
 			$member->settings = json_encode($member->settings());
 		}
-		$db = new storage(array("table_name"=>"members", "primary_key_field"=>"id", "connection_string"=>storage_provider()));
+		$db = new storage(array("table_name"=>"members", "primary_key_field"=>"id", "connection_string"=>filter_center::publish("need_storage_connection_string", $this, "sixd.sqlite")));
 		$db->save(array($member));
 	}
 }
@@ -71,6 +71,7 @@ class widget_controller{
 		return $info;
 	}
 }
+filter_center::subscribe("need_storage_connection_string", null, new repo());
 $plugin_controller = new plugin_controller();
 filter_center::subscribe("before_rendering_view", null, new widget_controller());
 filter_center::subscribe("will_need_site_title", null, new site());

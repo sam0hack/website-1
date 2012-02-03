@@ -6,6 +6,7 @@ class signout_resource extends app_resource{
 	}
 	function GET(){
 		auth_controller::signout();
+		resource::redirect(null);
 		$this->output = view::render("member/signin", $this);
 		return layout::render("default", $this);
 	}

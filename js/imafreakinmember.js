@@ -7,6 +7,7 @@ chin.require(["model", "controller", "view"], function(){
 	model.settings = function(obj){
 		var self = model.apply(this, []);
 		var background_url = null;
+		var logo_url = null;
 		var active_tab_id = null;
 		var position = {top: 0, left: 0};
 		var title = null;
@@ -26,6 +27,14 @@ chin.require(["model", "controller", "view"], function(){
 			var old = colophon;
 			colophon = v;
 			this.changed("colophon", colophon, v);
+		});
+		this.__defineGetter__("logo_url", function(){
+			return logo_url;
+		});
+		this.__defineSetter__("logo_url", function(v){
+			var old = logo_url;
+			logo_url = v;
+			this.changed("logo_url", logo_url, v);
 		});
 		this.__defineGetter__("background_url", function(){
 			return background_url;
@@ -57,6 +66,75 @@ chin.require(["model", "controller", "view"], function(){
 			}
 		}
 	};
+	
+	model.post = function(obj){
+		var self = model.apply(this, []);
+		var body = null;
+		var position = null;
+		var posts = new model.list();
+		this.__defineGetter__("posts", function(){
+			return posts;
+		});
+		this.__defineSetter__("posts", function(v){
+			var old = posts;
+			posts = v;
+			this.changed("posts", posts, v);
+		});
+		this.__defineGetter__("position", function(){
+			return position;
+		});
+		this.__defineSetter__("position", function(v){
+			var old = position;
+			position = v;
+			this.changed("position", position, v);
+		});
+		this.__defineGetter__("body", function(){
+			return body;
+		});
+		this.__defineSetter__("body", function(v){
+			var old = body;
+			body = v;
+			this.changed("body", body, v);
+		});
+		if(obj !== null){
+			for(key in obj){
+				this[key] = obj[key];
+			}
+		}
+	};
+	view.tweet_list = function(id, controller, model, options){
+		var self = view.apply(this, [id, controller, model, options]);
+		this.model.posts.subscribe("push", this);
+		this.model.posts.subscribe("pop", this);
+		return this;
+	};
+	view.tweet_list.prototype = {
+		update: function(key, old, v, m){
+			chin.log([key, old, v, m]);
+			this.add(v);
+		}
+		, article: function(item){
+			var elem = document.createElement("article");
+			var p = document.createElement("p");
+			var footer = document.createElement("footer");
+			var time = document.createElement("time");
+			p.innerHTML = item.body;
+			time.innerHTML = item.publish_date;
+			time.setAttribute("pubdate", true);
+			time.setAttribute("datetime", item.publish_date);
+			footer.appendChild(time);
+			elem.appendChild(p);
+			elem.appendChild(footer);
+			return elem;
+		}
+		, add: function(tweet){
+			var first_article = this.container.querySelector("article");
+			this.container.insertBefore(this.article(tweet), first_article);
+		}
+		, remove: function(tweet){
+			
+		}
+	};
 	view.home = function(id, controller, model, options){
 		var self = view.apply(this, [id, controller, model, options]);
 		this.title_field = document.querySelector("body>header h1 a");
@@ -71,6 +149,123 @@ chin.require(["model", "controller", "view"], function(){
 			if(key === "colophon") this.colophon_field.innerHTML = v;
 		}
 	};
+	widget.post = function(id, controller, model, options){
+		var self = view.apply(this, [id, controller, model, options]);
+		this.close_button = this.container.querySelector("button.close");
+		this.model.subscribe("body", this);
+		this.model.subscribe("type", this);
+		return this;
+	};
+	widget.post.prototype = {
+		update: function(key, old, v, m){
+			chin.log([key, old, v]);
+		}
+	};
+
+	controller.post = function(delegate, m){
+		var self = controller.apply(this, [delegate, m]);
+		this.post = {body: "", publish_date: new Date()};
+		this.move_delegate = function(e){self.mouse_move(e);};
+		this.up_delegate = function(e){self.mouse_up(e);};
+		this.down_delegate = function(e){self.mouse_down(e);};
+		this.click_delegate = function(e){self.click(e);};
+		this.close_clicked_delegate = function(e){self.close_clicked(e);};
+		this.keyup_delegate = function(e){self.keyup(e);};
+		this.submit_delegate = function(e){self.submit(e);};
+		this.load_view = function(){
+			var self = this;
+			this.view = new widget.post(document.getElementById("post"), this, this.model);
+			this.view.container.querySelector("textarea").addEventListener(chin.device.KEYUP, this.keyup_delegate, true);
+			this.view.container.querySelector("form").addEventListener(chin.device.SUBMIT, this.submit_delegate, true);
+			this.view.header.addEventListener(chin.device.MOUSEDOWN, this.down_delegate, true);
+			this.view.close_button.addEventListener(chin.device.MOUSEDOWN, this.close_clicked_delegate, true);
+			this.view.top = this.model.position.top;
+			this.view.left = this.model.position.left;
+			this.view.hidden = false;
+		};
+		var release = this.release;
+		this.release = function(){
+			if(this.model !== null) this.model.clear();
+			this.view.header.removeEventListener(chin.device.MOUSEDOWN, this.down_delegate, true);
+			this.view.close_button.removeEventListener(chin.device.MOUSEDOWN, this.close_clicked_delegate, true);
+			release.apply(this, []);
+			this.model = null;
+		};
+		return this;
+	};
+	controller.post.prototype = {
+		mouse_down: function(e){
+			this.drag_start(e);
+		}
+		, mouse_up: function(e){
+			this.drag_end(e);
+		}
+		, mouse_move: function(e){
+			this.drag_move(e);
+		}
+		, drag_start: function(e){
+			// stop page from panning on iPhone/iPad - we're moving a note, not the page
+			e.preventDefault();
+			e = (chin.device.CANTOUCH && e.touches && e.touches.length > 0) ? e.touches[0] : e;
+			this.view.start_x = e.clientX - this.view.container.offsetLeft;
+			this.view.start_y = e.clientY - this.view.container.offsetTop;
+			this.view.z = 1000;
+			window.addEventListener(chin.device.MOUSEMOVE, this.move_delegate, true);
+			window.addEventListener(chin.device.MOUSEUP, this.up_delegate, true);
+			return false;
+		}
+		, drag_move: function(e){
+			// stop page from panning on iPhone/iPad - we're moving a note, not the page
+			e.preventDefault();
+			e = (chin.device.CANTOUCH && e.touches && e.touches.length > 0) ? e.touches[0] : e;
+			if(e.clientY - this.view.start_y < 0) return false;
+			if(e.clientX - this.view.start_x < 0) return false;
+			this.view.left = e.clientX - this.view.start_x;
+			this.view.top = e.clientY - this.view.start_y;
+			return false;
+		}
+		, drag_end: function(e){
+			window.removeEventListener(chin.device.MOUSEMOVE, this.move_delegate, true);
+			window.removeEventListener(chin.device.MOUSEUP, this.up_delegate, true);
+			var new_position = {top: this.view.top, left: this.view.left};
+			this.model.position = new_position;
+			return false;
+		}
+		, close_clicked: function(e){
+			this.view.hidden = true;
+			this.delegate.view_did_unload(this);
+		}
+		, keyup: function(e){
+			this.post.body = e.target.value;
+			this.post.publish_date = new Date();
+		}
+		, submit: function(e){
+			e.preventDefault();
+			var posts = this.model.posts;
+			posts.push(this.post);
+			this.model.posts = posts;
+			this.post = {body: "", publish_date: new Date()};
+			this.delegate.save_post(this.post.body);
+			this.close_clicked(e);
+			posts = null;
+		}
+	};
+	controller.tweet_list = function(delegate, m){
+		var self = controller.apply(this, [delegate, m]);
+		this.load_view = function(){
+			this.view = new view.tweet_list(document.querySelector("body>section>aside"), this, this.model);
+		};
+		var release = this.release;
+		this.release = function(){
+			if(this.model !== null) this.model.clear();
+			if(this.view){
+			}
+			release.apply(this, []);
+			this.model = null;
+		};
+		return this;
+	};
+	
 	controller.home = function(delegate, m){
 		var self = controller.apply(this, [delegate, m]);
 		this.load_view = function(){
@@ -137,7 +332,7 @@ chin.require(["model", "controller", "view"], function(){
 			if(this.view.title !== null) this.tab_bar_item.title = this.view.title;
 			this.view.container.querySelector("input[type='file']").addEventListener("change", this.change_delegate, true);
 			this.view.container.querySelector("ul").addEventListener("click", this.item_clicked_delegate, true);
-			this.view.container.querySelector("form").addEventListener("submit", this.submit_delegate, true);
+			this.view.container.querySelector("form").addEventListener(chin.device.SUBMIT, this.submit_delegate, true);
 			var xhr = new XMLHttpRequest();
 			var self = this;
 			xhr.addEventListener("readystatechange", function(e){
@@ -161,7 +356,7 @@ chin.require(["model", "controller", "view"], function(){
 			if(this.view){
 				this.view.container.querySelector("input[type='file']").removeEventListener("change", this.change_delegate, true);				
 				this.view.container.querySelector("ul").removeEventListener("click", this.item_clicked_delegate, true);
-				this.view.container.querySelector("form").removeEventListener("submit", this.submit_delegate, true);
+				this.view.container.querySelector("form").removeEventListener(chin.device.SUBMIT, this.submit_delegate, true);
 			}
 			release.apply(this, []);
 			this.model = null;
@@ -332,7 +527,7 @@ chin.require(["model", "controller", "view"], function(){
 			release.apply(this, []);
 			this.model = null;
 		}
-		this.view_did_unload = function(){
+		this.view_did_unload = function(controller){
 			for(key in this.controllers){
 				this.controllers[key].release();
 				delete this.controllers[key];
@@ -399,8 +594,8 @@ chin.require(["model", "controller", "view"], function(){
 		, close_clicked: function(e){
 			for(key in this.controllers){
 				if(this.controllers[key]) this.controllers[key].release();
+				this.delegate.view_did_unload(this.controllers[key]);
 			}
-			this.delegate.view_did_unload();
 		}
 	};
 	controller.settings = function(delegate, m){
@@ -410,13 +605,13 @@ chin.require(["model", "controller", "view"], function(){
 		this.load_view = function(){
 			this.view = new widget.settings("settings", this, null);
 			if(this.view.title !== null) this.tab_bar_item.title = this.view.title;
-			this.view.container.querySelector("textarea").addEventListener("keyup", this.keyup_delegate, true);
+			this.view.container.querySelector("textarea").addEventListener(chin.device.KEYUP, this.keyup_delegate, true);
 			this.view.show();
 		};
 		var release = this.release;
 		this.release = function(){
 			if(this.view !== null){
-				this.view.container.querySelector("textarea").removeEventListener("keypress", this.keypress_delegate, true);				
+				this.view.container.querySelector("textarea").removeEventListener(chin.device.KEYUP, this.keyup_delegate, true);				
 			}
 			release.apply(this, []);
 		};
@@ -429,20 +624,38 @@ chin.require(["model", "controller", "view"], function(){
 	};
 	var app = (function(){
 		var edit_link = document.getElementById("edit_link");
+		var post_link = document.getElementById("post_link");
 		var tab_bar_controller = null;
+		var post_controller = null;
 		var home_controller = null;
-		var m = localStorage.joeyguerra;
+		var settings = localStorage.settings;
+		var post = localStorage.post;
 		var user_message = document.getElementById("user_message");
 		var should_save_background = false;
 		var should_save_settings = false;
-		if(!m){
-			m = new model.settings({title: document.querySelector("body>header h1 a").innerHTML, colophon: document.querySelector("body>header p").innerHTML, active_tab_id: "photo_browser_controller", position: {top: 0, left: 0}, background_url: ""});
-			localStorage.joeyguerra = JSON.stringify(m);
-		}else{
-			m = new model.settings(JSON.parse(m));
+		var tweets = document.querySelectorAll("body>section>aside article");
+		var posts = new model.list();
+		for(var i =0; i < tweets.length; i++){
+			var obj = {body: tweets[i].querySelector("p").innerHTML, publish_date: tweets[i].querySelector("time").innerHTML};
+			posts.push(obj);
 		}
-		home_controller = new controller.home(this, m);
+		if(!settings){
+			settings = new model.settings({title: document.querySelector("body>header h1 a").innerHTML, colophon: document.querySelector("body>header p").innerHTML, active_tab_id: "photo_browser_controller", position: {top: 0, left: 0}, background_url: document.body.style["background-image"].replace(/url\(/, "").replace(/\)$/, ""), logo_url: ""});
+			localStorage.settings = JSON.stringify(settings);
+		}else{
+			settings = new model.settings(JSON.parse(settings));
+		}
+		if(!post){
+			post = new model.post({body: "", position: {top: 0, left: 0}});
+			localStorage.post = JSON.stringify(post);
+		}else{
+			post = new model.post(JSON.parse(post));
+		}
+		post.posts = posts;
+		var tweet_list_controller = new controller.tweet_list(this, post);
+		home_controller = new controller.home(this, settings);
 		home_controller.load_view();
+		tweet_list_controller.load_view();
 		var self = {
 			add_subview: function(view){
 			}
@@ -453,15 +666,17 @@ chin.require(["model", "controller", "view"], function(){
 				aside.hide();
 			}
 			, image_was_clicked: function(target){
-				m.background_url = target.src.replace("thumbnails/", "");
+				settings.background_url = target.src.replace("thumbnails/", "");
 			}
-			, handleEvent: function(e){
+			, edit_link_clicked: function(e){
 				if(tab_bar_controller !== null){
-					this.view_did_unload();
+					for(key in tab_bar_controller.controllers){
+						this.view_did_unload(tab_bar_controller.controllers[key]);
+					}
 				}else{
-					tab_bar_controller = new controller.tab_bar(this, m);
+					tab_bar_controller = new controller.tab_bar(this, settings);
 					var photo_browser_controller = new controller.photo_browser(this, null);
-					var settings_controller = new controller.settings(this, m);
+					var settings_controller = new controller.settings(this, settings);
 					tab_bar_controller.controllers.photo_browser_controller = photo_browser_controller;
 					tab_bar_controller.controllers.settings_controller = settings_controller;
 					for(key in tab_bar_controller.controllers){
@@ -469,44 +684,61 @@ chin.require(["model", "controller", "view"], function(){
 					}
 					tab_bar_controller.delegate = this;
 					tab_bar_controller.load_view();
-					document.body.addEventListener("click", function(e){self.body_clicked(e);}, true);
-					edit_link.innerHTML = "Done";					
+					edit_link.innerHTML = "Done";
 				}
+			}
+			, post_link_clicked: function(e){
+				post_controller = new controller.post(this, post);
+				post_controller.load_view();
 			}
 			, add_user_message: function(message){
 				var aside = chin.dom(tab_bar_controller.view.container.querySelector("aside"));
 				aside.elem.innerHTML += message + "<br />";
 				aside.show();
 			}
-			, view_did_unload: function(){
-				if(should_save_background) this.save_background(null);
-				if(should_save_settings) this.save_settings(null);
-				tab_bar_controller.release();
-				tab_bar_controller = null;
-				edit_link.innerHTML = "Edit";
+			, view_did_unload: function(c){
+				if(c instanceof controller.post){
+					chin.log("post was closed");
+				}else if(c instanceof controller.tweet_list){
+					chin.log("tweet list was closed");
+				}else if(tab_bar_controller !== null){
+					if(should_save_background) this.save_background(null);
+					if(should_save_settings) this.save_settings(null);
+					tab_bar_controller.release();
+					tab_bar_controller = null;
+					edit_link.innerHTML = "Edit";					
+				}
 			}
 			, application_did_finish_launching: function(){
 				if(!edit_link) return;
-				edit_link.addEventListener("click", this, true);
-				m.subscribe("background_url", this);
-				m.subscribe("active_tab_id", this);
-				m.subscribe("position", this);
-				m.subscribe("title", this);
-				m.subscribe("colophon", this);
+				edit_link.addEventListener("click", edit_click_delegate, true);
+				post_link.addEventListener("click", post_click_delegate, true);
+				settings.subscribe("background_url", this);
+				settings.subscribe("active_tab_id", this);
+				settings.subscribe("position", this);
+				settings.subscribe("title", this);
+				settings.subscribe("colophon", this);
+				
+				post.subscribe("position", this);
+				document.body.addEventListener("click", function(e){self.body_clicked(e);}, true);
 			}
 			, get_csrf_token: function(){
 				var csrf_token_field = document.querySelector("input[name=_csrf_token]");
 				return {_csrf_token: csrf_token_field.value};
 			}
-			, update: function(key, old, v, m){
-				if(key === "background_url"){
-					should_save_background = true;
-					document.body.style["background-image"] = "url(" + v + ")";
+			, update: function(key, old, value, obj){
+				if(obj instanceof model.post){
+					localStorage.post = JSON.stringify(obj);
+				}else if(obj instanceof model.settings){
+					if(key === "background_url"){
+						should_save_background = true;
+						document.body.style["background-image"] = "url(" + value + ")";
+					}
+					if(["title", "colophon"].indexOf(key) > -1){
+						should_save_settings = true;
+					}
+					localStorage.settings = JSON.stringify(obj);
 				}
-				if(["title", "colophon"].indexOf(key) > -1){
-					should_save_settings = true;
-				}
-				localStorage.joeyguerra = JSON.stringify(m);
 			}
 			, photo_was_deleted: function(result){
 				var name = document.body.style["background-image"].split("/");
@@ -516,6 +748,43 @@ chin.require(["model", "controller", "view"], function(){
 				if(name === deleted_name){
 					document.body.style["background-image"] = null;
 				}
+			}
+			, save_post: function(e){
+				var url = chin.root_url() + "posts.json";
+				var xhr = new XMLHttpRequest();
+				var self = this;
+				xhr.addEventListener("readystatechange", function(e){
+					if(e.target.readyState !== XMLHttpRequest.DONE) return;
+					var headers = chin.parse_headers(e.target);
+					if(e.target.status === 200){
+						if(e.target.responseText.length > 0){
+							var result = JSON.parse(e.target.responseText);
+							user_message.innerHTML = "";
+							if(!result.error) user_message.innerHTML += "<br />You're message has been saved.";
+						}
+					}
+					if(headers.Warning){
+						user_message.innerHTML += headers.Warning;
+					}
+					user_message.style.display = "block";
+					setTimeout(function(){
+						//user_message.style.display = "none";
+					}, 2000);
+				}, true);
+				var fields = post_controller.view.container.querySelectorAll("input, textarea");
+				var data = [];
+				var ubounds = fields.length;
+				for(i=0;i<ubounds;i++){
+					if(fields[i].value.length > 0){
+						if(fields[i].type === "checkbox"){
+							if(fields[i].checked) data.push(fields[i].name + "=" + fields[i].value);
+						}else data.push(fields[i].name + "=" + encodeURIComponent(fields[i].value));
+					}
+				}
+				
+				xhr.open("POST", url);
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				xhr.send(data.join("&"));
 			}
 			, save_settings: function(e){
 				should_save_settings = false;
@@ -572,13 +841,15 @@ chin.require(["model", "controller", "view"], function(){
 						}, 2000);
 					}
 				}, true);
-				var data = "background_url=" + m.background_url;
+				var data = "background_url=" + settings.background_url;
 				data += "&_csrf_token=" + document.querySelector("input[name='_csrf_token']").value;
 				xhr.open("POST", url);
 				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 				xhr.send(data);
 			}			
 		};
+		var edit_click_delegate = function(e){self.edit_link_clicked();};
+		var post_click_delegate = function(e){self.post_link_clicked(e);};
 		self.application_did_finish_launching();
 		return self;
 	})();

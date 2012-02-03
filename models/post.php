@@ -10,9 +10,29 @@ class post extends model{
 	public $id;
 	public $title;
 	public $body;
+	public $status;
 	public $publish_date;
 	public $created;
 	public $modified;
 	public $owner_id;
 	public $type;
+	public $settings;
+	private $_settings;
+	static function find($sql, $obj){
+		$db = new storage(array("table_name"=>"posts", "primary_key_field"=>"id"));
+		$posts = $db->query($sql, $obj, function($obj){
+			$props = get_object_vars($obj);
+			$new_object = new post();
+			foreach($props as $k=>$v){
+				if($k === "settings") $v = json_decode($v);
+				$new_object->$k = $v;
+			}
+			return $new_object;
+		});
+		return $posts;
+	}
+	static function summary($post){
+		if($post->settings !== null) return $post->settings->summary;
+		return $post->body;
+	}
 }

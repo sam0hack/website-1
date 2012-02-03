@@ -6,7 +6,7 @@ class storage{
 		$this->class_name = $ref->getName();
 		$this->table_name = array_key_exists("table_name", $options) && $options["table_name"] !== null ? $options["table_name"] :  string::pluralize($this->class_name);
 		$this->primary_key_field = array_key_exists("primary_key_field", $options) && $options["primary_key_field"] !== null ? $options["primary_key_field"] : "id";
-		$connection_string = (array_key_exists("connection_string", $options) && $options["connection_string"] !== null ? $options["connection_string"] : storage_provider());
+		$connection_string = (array_key_exists("connection_string", $options) && $options["connection_string"] !== null ? $options["connection_string"] : filter_center::publish("need_storage_connection_string", $this, "data.sqlite"));
 		try{
 			$this->provider = new PDO("sqlite:" . $connection_string);			
 		}catch(PDOException $e){
@@ -201,10 +201,6 @@ class storage{
 			}
 		}
 		return $commands;
-	}
-	function open_connection(){
-		$provider = new PDO("sqlite:" . storage_provider());
-		return $provider;
 	}
 	function save($things){
 		if(!is_array($things)) throw new Exception("storage::save expects an array.");

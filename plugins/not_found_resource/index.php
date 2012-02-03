@@ -1,5 +1,6 @@
 <?php
-class not_found_resource extends resource{
+class_exists("app_resource") || require("resources/app_resource.php");
+class not_found_resource extends app_resource{
 	function __construct($request, $url){
 		parent::__construct($request, $url);
 	}
