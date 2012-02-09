@@ -4,6 +4,7 @@ class_exists("app_resource") || require("app_resource.php");
 class index_resource extends app_resource{
 	function __construct($request, $url){
 		parent::__construct($request, $url);
+		$this->posts = array();
 	}
 	public $posts;
 	public $most_recent_post;
@@ -14,7 +15,7 @@ class index_resource extends app_resource{
 		if($this->posts === null) $this->posts = array();
 		*/
 		$this->most_recent_post = storage::find_posts_one(array("where"=>"owner_id=:owner_id and status='public'", "args"=>array("owner_id"=>site::$member->id), "order_by"=>"publish_date desc"));
-		$this->posts = storage::find_posts(array("where"=>"ROWID != :id and owner_id=:owner_id and status='public'", "args"=>array("owner_id"=>site::$member->id, "id"=>$this->most_recent_post->id), "order_by"=>"publish_date desc"));
+		if($this->most_recent_post !== null)  $this->posts = storage::find_posts(array("where"=>"ROWID != :id and owner_id=:owner_id and status='public'", "args"=>array("owner_id"=>site::$member->id, "id"=>$this->most_recent_post->id), "order_by"=>"publish_date desc"));
 		$this->output = view::render("index/index", $this);
 		return layout::render("default", $this);
 	}

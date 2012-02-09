@@ -1,3 +1,4 @@
+<?php if($most_recent_post !== null):?>
 <article>
 	<h1><?php echo $most_recent_post->title;?></h1>
 	<p><?php echo $most_recent_post->body;?></p>
@@ -14,3 +15,4 @@
 	</article>
 	<?php endforeach;?>
 </aside>
+<?php endif;?>
