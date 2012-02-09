@@ -37,33 +37,44 @@ class site{
 		}
 	}
 	function will_need_site_title($publisher, $info){
-		$settings = storage::find_settings_one(array("where"=>"key=:key and owner_id=:owner_id", "args"=>array("key"=>"site_title", "owner_id"=>self::$member->id)));
-		$info = " 6d";
-		if(count($settings) > 0) $info = $settings[0]->value;
+		if(site::$member->settings()->site_title){
+			$info = site::$member->settings()->site_title;
+		}
 		return $info;
 	}
 }
 
 class repo{
 	function __construct(){}
-	private $connection_string;
 	function need_storage_connection_string($publisher, $info){
 		return resource::get_absolute_path("sixd.sqlite");
 	}
 	function should_save_post($publisher, $post){
-		$db = new storage(array("table_name"=>"posts", "primary_key_field"=>"id", "connection_string"=>filter_center::publish("need_storage_connection_string", $this, "sixd.sqlite")));
-		$db->save(array($post));
+		$tags = $post->get_tags();
+		$db = new storage(array("table_name"=>"posts"));
+		$list = $db->save(array($post));
+		$db = new storage(array("table_name"=>"post_tags"));
+		for($i = 0; $i < count($tags); $i++){
+			$tags[$i]->post_id = $list[0][0]->id;
+		}
+		$db->save($tags);
 	}
 	function should_save_story($publisher, $story){
-		$db = new storage(array("table_name"=>"stories", "primary_key_field"=>"id", "connection_string"=>filter_center::publish("need_storage_connection_string", $this, "sixd.sqlite")));
+		$db = new storage(array("table_name"=>"stories"));
 		$db->save(array($story));
 	}
 	function should_save_member($publisher, $member){
 		if($member->settings() !== null){
 			$member->settings = json_encode($member->settings());
 		}
-		$db = new storage(array("table_name"=>"members", "primary_key_field"=>"id", "connection_string"=>filter_center::publish("need_storage_connection_string", $this, "sixd.sqlite")));
+		$db = new storage(array("table_name"=>"members"));
 		$db->save(array($member));
+		$errors = $db->get_errors();
+		if(count($errors) > 0 && $errors[0] !== "00000"){
+			foreach($db->get_errors() as $error){
+				view::set_user_message($error);
+			}
+		}
 	}
 }
 class widget_controller{
@@ -71,6 +82,28 @@ class widget_controller{
 		return $info;
 	}
 }
+class custom_resources{
+	function before_rendering_view($publisher, $info){
+		if($publisher->url->file_type === "phtml"){
+			if(!file_exists("custom/$info")){
+				$info = str_replace(".phtml", ".html", $info);
+			}
+		}
+		if(file_exists("custom/$info")){
+			$info = "custom/$info";
+		}
+		return $info;
+	}
+	function before_including_resource_file($publisher, $info){
+		if(file_exists("custom/$info")){
+			$info = "custom/$info";
+		}
+		return $info;
+	}
+}
+filter_center::subscribe("should_set_js_path", null, new theme_controller());
+filter_center::subscribe("before_including_resource_file", null, new custom_resources());
+filter_center::subscribe("before_rendering_view", null, new custom_resources());
 filter_center::subscribe("need_storage_connection_string", null, new repo());
 $plugin_controller = new plugin_controller();
 filter_center::subscribe("before_rendering_view", null, new widget_controller());
@@ -84,6 +117,7 @@ filter_center::subscribe("setting_parameter_from_request", null, new magic_quote
 filter_center::subscribe("setting_parameter_from_request", null, new object_populator_from_request());
 notification_center::subscribe("begin_request", null, new site());
 notification_center::subscribe("before_calling_http_method", null, new auth_controller());
+notification_center::subscribe("begin_request", null, new auth_controller());
 notification_center::subscribe("begin_request", null, $plugin_controller);
 $r = new repo();
 notification_center::subscribe("should_save_post", null, $r);

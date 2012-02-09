@@ -1,0 +1,16 @@
+<article>
+	<h1><?php echo $most_recent_post->title;?></h1>
+	<p><?php echo $most_recent_post->body;?></p>
+	<footer><time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time></footer>
+</article>
+<aside>
+	<?php foreach($posts as $post):?>
+	<article>
+		<header><h2><?php echo $post->title;?></h2></header>
+		<div><?php echo $post->body;?></div>
+		<footer>
+			<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
+		</footer>
+	</article>
+	<?php endforeach;?>
+</aside>

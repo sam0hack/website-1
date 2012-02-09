@@ -97,6 +97,24 @@ var view = function(id, controller, model, options){
 		if(delegate) return delegate(this);
 		this.container.style.display = "none";
 	};
+	this.add_class_name = function(elem, name){
+		if(elem.className.indexOf(name) === -1){
+			var names = this.container.className.split(" ");
+			names.push(name);
+			elem.className = names.join(" ");
+		}
+	};
+	this.remove_class_name = function(elem, name){
+		if(elem.className.indexOf(name) > -1){
+			var names = elem.className.split(" ");
+			var new_ones = [];
+			while(class_name = names.shift()){
+				if(class_name === name) continue;
+				new_ones.push(name);
+			}
+			elem.className = new_ones.join(" ");
+		}
+	}
 	return this;
 }
 function field(elem){

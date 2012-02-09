@@ -6,22 +6,28 @@ String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/g, "");
 };
 chin.head = document.querySelector("head");
-chin.require = function(names, callback){
-	var end = names.length;
+chin.require = function(urls, callback){
+	var end = urls.length;
 	var start = 0;
-	var self = this;
-	for(key in names){
+	var self = {
+		ok: function(e){
+			start++;
+			if(start >= end && callback){
+				callback();
+			}
+		}
+	};
+	for(var i = 0; i < end; i++){
+		var existing = document.querySelector("script[src='" + urls[i] + "']");
+		if(existing !== null){
+			self.ok(null);
+			continue;
+		}
 		var script = document.createElement("script");
-		script.src = chin.root_url() + "js/" + names[key] + ".js";
+		script.src = urls[i];
 		script.addEventListener("load", function(e){self.ok(e);}, true);
 		chin.head.appendChild(script);
 	}
-	this.ok = function(e){
-		start++;
-		if(start >= end && callback){
-			callback();
-		}
-	};
 	return this;
 };
 chin.notification_center = (function(){

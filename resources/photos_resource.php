@@ -50,7 +50,7 @@ class photos_resource extends app_resource{
 						mkdir($thumbnail_folder, 0777, true);
 					}
 					$thumbnail_file = photos_resource::generate_thumbnail($result->file_path, $thumbnail_folder);
-					$result->file_path = str_replace("media/" . auth_controller::current_user()->signin, "photos", resource::url_for($thumbnail_file));
+					$result->file_path = str_replace("media/" . auth_controller::$current_user->signin, "photos", resource::url_for($thumbnail_file));
 					//{"name":"'.$file['name'].'","type":"'.$file['type'].'","size":"'.$file['size'].'"}'						
 				}
 			}
@@ -105,10 +105,10 @@ class photos_resource extends app_resource{
 		$this->result = array();
 		$this->folders = array();
 		foreach($paths as $file){
-			media::delete(sprintf("media/%s/%s", auth_controller::current_user()->signin, $file));
+			media::delete(sprintf("media/%s/%s", auth_controller::$current_user->signin, $file));
 			$parts = explode("/", $file);
 			$file_name = array_pop($parts);
-			$thumbnail = sprintf("media/%s/%s/thumbnails/%s", auth_controller::current_user()->signin, implode("/", $parts), $file_name);
+			$thumbnail = sprintf("media/%s/%s/thumbnails/%s", auth_controller::$current_user->signin, implode("/", $parts), $file_name);
 			media::delete($thumbnail);
 			$this->result[] = (object)array("name"=>$file_name, "thumbnail_src"=>$thumbnail, "error"=>null);
 		}
@@ -142,7 +142,7 @@ class photos_resource extends app_resource{
 		return $parts[count($parts)-1];
 	}
 	private function get_upload_folder(){
-		return sprintf("media/%s/%s", auth_controller::current_user()->signin, date("Y"));
+		return sprintf("media/%s/%s", auth_controller::$current_user->signin, date("Y"));
 	}
 	private function create_and_get_file_path($file, $file_type){
 		$file_name = preg_replace("/\.*/", "", uniqid(null, true));

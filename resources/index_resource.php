@@ -6,12 +6,15 @@ class index_resource extends app_resource{
 		parent::__construct($request, $url);
 	}
 	public $posts;
+	public $most_recent_post;
 	function GET(){
 		/*$this->title = site::$member->colophon;
 		//$this->posts = storage::find_posts((object)array("where"=>"owner_id=:owner_id and status='public'", "args"=>array("owner_id"=>site::$member->id), "order_by"=>"publish_date desc"));
 		$this->posts = post::find("select p.ROWID as id, p.title, p.body, p.publish_date, m.name as author from posts p inner join members m on m.ROWID = p.owner_id where p.owner_id = :owner_id and p.status='public' and p.publish_date <= current_timestamp order by p.publish_date desc", array("owner_id"=>site::$member->id));
 		if($this->posts === null) $this->posts = array();
 		*/
+		$this->most_recent_post = storage::find_posts_one(array("where"=>"owner_id=:owner_id and status='public'", "args"=>array("owner_id"=>site::$member->id), "order_by"=>"publish_date desc"));
+		$this->posts = storage::find_posts(array("where"=>"ROWID != :id and owner_id=:owner_id and status='public'", "args"=>array("owner_id"=>site::$member->id, "id"=>$this->most_recent_post->id), "order_by"=>"publish_date desc"));
 		$this->output = view::render("index/index", $this);
 		return layout::render("default", $this);
 	}

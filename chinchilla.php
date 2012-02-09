@@ -405,7 +405,18 @@ class notification_center{
 		self::$observers[$name][] = $subscriber;
 	}
 }
-
+class http_request{
+	function __construct($parms){
+		$this->method = "get";
+		foreach($parms as $key=>$value){
+			$this->{$key} = $value;
+		}
+	}
+	public $method;
+	public $content;
+	public $optional_headers;
+	public $url;
+}
 class request{
 	function __construct($server, $request, $files, $post, $get){
 		$this->server = $server;
@@ -457,6 +468,65 @@ class request{
 		}		
 		return $hash;
 	}
+	static $response;
+	private static $fp;
+	static function send_asynch(http_request $request) {
+		$options = array("http" => array(
+			"method" => strtoupper($request->method)
+			, "content"=> $request->content
+			, "header"=>"")
+		);
+		if ($request->optional_headers !== null) {
+			$options["http"]["header"] = $request->optional_headers;
+		}
+		if($request->method === "post"){
+			$options["http"]["header"] .= "Content-Type:application/x-www-form-urlencoded\r\n";
+		}
+		
+		$stream = stream_context_create($options);
+		stream_context_set_params($stream, array("notification"=>array("request", "stream_callback")));
+		self::$fp = fopen($request->url, "rb", false, $stream);
+		self::$response = stream_get_contents(self::$fp);
+		console::log("done");
+		return self::$response;
+	}
+	static function stream_callback($code, $severity, $message, $message_code, $transferred, $max){
+		if($code === STREAM_NOTIFY_COMPLETED) fclose(self::$fp);
+		if($code === STREAM_NOTIFY_RESOLVE) $code = "RESOLVE";
+		if($code === STREAM_NOTIFY_CONNECT) $code = "CONNECT";
+		if($code === STREAM_NOTIFY_AUTH_REQUIRED) $code = "AUTH_REQUIRED";
+		if($code === STREAM_NOTIFY_MIME_TYPE_IS) $code = "STREAM_NOTIFY_MIME_TYPE_IS";
+		if($code === STREAM_NOTIFY_FILE_SIZE_IS) $code = "STREAM_NOTIFY_FILE_SIZE_IS";
+		if($code === STREAM_NOTIFY_REDIRECTED) $code = "STREAM_NOTIFY_REDIRECTED";
+		if($code === STREAM_NOTIFY_PROGRESS) $code = "STREAM_NOTIFY_PROGRESS";
+		if($code === STREAM_NOTIFY_COMPLETED) $code = "STREAM_NOTIFY_COMPLETED";
+		if($code === STREAM_NOTIFY_FAILURE) $code = "STREAM_NOTIFY_FAILURE";
+		if($code === STREAM_NOTIFY_AUTH_RESULT) $code = "STREAM_NOTIFY_AUTH_RESULT";
+		if($code === STREAM_NOTIFY_SEVERITY_INFO) $code = "STREAM_NOTIFY_SEVERITY_INFO";
+		if($code === STREAM_NOTIFY_SEVERITY_WARN) $code = "STREAM_NOTIFY_SEVERITY_WARN";
+		if($code === STREAM_NOTIFY_SEVERITY_ERR) $code = "STREAM_NOTIFY_SEVERITY_ERR";
+		console::log(array("code"=>$code, "severity"=>$severity, "message"=>$message, "transferred"=>$transferred, "message_code"=>$message_code, "max"=>$max));
+	}
+	static function send(http_request $request){
+		$options = array("http" => array(
+			"method" => strtoupper($request->method)
+			, "content"=> $request->data
+			, "header"=>"Content-Type: text/html\r\n"
+		));
+		if ($request->optional_headers !== null) {
+			$options["http"]["header"] = $request->optional_headers;
+		}
+		if($request->method === "post"){
+			$options["http"]["header"] .= "Content-Type:application/x-www-form-urlencoded\r\n";
+		}
+		$ctx = stream_context_create($params);
+		$fp = @fopen($request->url, "rb", false, $ctx);
+		if (!$fp) return false;
+		$response = stream_get_contents($fp);
+		fclose($fp);
+		return $response;
+	}
+	
 }
 class theme_controller{
 	static function get_theme(){

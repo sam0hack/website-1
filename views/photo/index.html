@@ -1,6 +1,6 @@
 <ul>
 	<?php foreach($folders as $key=>$folder):?>
 		<li>
-			<a href="<?php echo resource::url_for("photos/" . str_replace(sprintf("media/%s/", auth_controller::current_user()->signin), "", $folder->src));?>"><?php echo $folder->src;?></a></li>
+			<a href="<?php echo resource::url_for("photos/" . str_replace(sprintf("media/%s/", auth_controller::$current_user->signin), "", $folder->src));?>"><?php echo $folder->src;?></a></li>
 	<?php endforeach;?>
 </ul>

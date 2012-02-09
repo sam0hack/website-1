@@ -14,7 +14,7 @@ class thumbnails_resource extends app_resource{
 		$this->title = "Thumbnails";
 		$view = "thumbnail/index";
 		$path = null;
-		$user_path = "media/" . auth_controller::current_user()->signin;
+		$user_path = "media/" . auth_controller::$current_user->signin;
 		$this->folders = array();
 		$path = $user_path;
 		if($year != null){

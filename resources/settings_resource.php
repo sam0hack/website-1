@@ -18,7 +18,7 @@ class settings_resource extends app_resource{
 	}
 	
 	function PUT(member $member){
-		$this->member = auth_controller::current_user();
+		$this->member = auth_controller::$current_user;
 		$this->member->in_directory = $member->in_directory;
 		$this->member->timestamp = gmmktime();
 		$this->member->colophon = $member->colophon;

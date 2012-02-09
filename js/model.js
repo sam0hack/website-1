@@ -27,6 +27,12 @@ var model = function(){
 	};
 	return this;
 };
+model.init = function(obj, m){
+	for(key in obj){
+		m[key] = obj[key];
+	}
+	return m;
+};
 model.list = function(list){
 	model.apply(this, []);
 	var inner_list = list ? list : [];
@@ -36,7 +42,7 @@ model.list = function(list){
 	};
 	this.pop = function(){
 		var last = inner_list.pop();
-		this.changed("pop", null, last);
+		this.changed("pop", last, null);
 		return last;
 	};
 	this.shift = function(){
@@ -56,6 +62,7 @@ model.list = function(list){
 		for(i; i < ubounds; i++){
 			if(delegate(i, inner_list[i])){
 				deleted = inner_list.splice(i, 1);
+				chin.log(deleted);
 				this.changed("remove", deleted[0], i);
 				break;
 			}

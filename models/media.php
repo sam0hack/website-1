@@ -94,7 +94,7 @@ class media extends model{
 		return self::$images;
 	}
 	static function find_owned_by($owner_id){
-		$medium = storage::find_media(array("where"=>"type='attachment' and owner_id=:owner_id", "args"=>array("owner_id"=> auth_controller::current_user()->id)));
+		$medium = storage::find_media(array("where"=>"type='attachment' and owner_id=:owner_id", "args"=>array("owner_id"=> auth_controller::$current_user->id)));
 		return $medium;
 	}
 	

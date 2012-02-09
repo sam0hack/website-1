@@ -200,6 +200,7 @@ class storage{
 				array_push($commands, $this->create_update_command($item, $this->get_primary_key($item)));
 			}else{
 				array_push($commands, $this->create_insert_command($item));
+				array_push($commands, $this->create_command("select ROWID as id, * from {$this->table_name} where ROWID=last_insert_rowid();", null));
 			}
 		}
 		return $commands;

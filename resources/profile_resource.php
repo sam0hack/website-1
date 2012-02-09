@@ -17,7 +17,7 @@ class profile_resource extends app_resource{
 		return layout::render("default", $this);
 	}
 	function PUT(member $member){
-		$this->member = auth_controller::current_user();
+		$this->member = auth_controller::$current_user;
 		$this->member->signin = $member->signin;
 		if(count($member->password) > 0) $this->member->password = $member->password;
 		$this->member->in_directory = $member->in_directory;

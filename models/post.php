@@ -2,10 +2,11 @@
 class_exists("model") || require("model.php");
 class post extends model{
 	function __construct($args = array()){
-		parent::__construct($args);
 		$this->publish_date = gmmktime();
 		$this->modified = gmmktime();
 		$this->created = gmmktime();
+		$this->_tags = array();
+		parent::__construct($args);
 	}
 	public $id;
 	public $title;
@@ -34,5 +35,12 @@ class post extends model{
 	static function summary($post){
 		if($post->settings !== null) return $post->settings->summary;
 		return $post->body;
+	}
+	private $_tags;
+	function get_tags(){
+		return $this->_tags;
+	}
+	function set_tags($value){
+		$this->_tags = $value;
 	}
 }

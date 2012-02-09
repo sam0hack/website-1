@@ -34,9 +34,9 @@ class csrf_token{
 			$sent_token = $publisher->request->put["_csrf_token"];			
 		}
 		// 2011-12-23, jguerra: + signs are being replaced by spaces in the POST/PUT so I'm replacing them here.
-		console::log("_csrf_token before replacing spaces = " . $sent_token);
+		//console::log("_csrf_token before replacing spaces = " . $sent_token);
 		$sent_token = str_replace(" ", "+", $sent_token);
-		console::log("$token=$sent_token");
+		//console::log("$token=$sent_token");
 		if($token !== $sent_token){
 			throw new Exception("Unauthorized");
 		}

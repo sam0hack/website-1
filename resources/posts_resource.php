@@ -13,7 +13,7 @@ class posts_resource extends app_resource{
 		return layout::render("default", $this);			
 	}
 	function POST(post $post){
-		$post->owner_id = (int)auth_controller::current_user()->id;
+		$post->owner_id = (int)auth_controller::$current_user->id;
 		if(strlen($post->publish_date) === 0) $post->publish_date = null;
 		if(!is_numeric($post->publish_date)) $post->publish_date = strtotime($post->publish_date);
 		$post->modified = gmmktime();
