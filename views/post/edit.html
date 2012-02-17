@@ -42,6 +42,12 @@
 				<?php endforeach;?>
 				</select>
 			</div>
+			<div>
+				<label for="tags">Tags</label>
+				<input type="text" name="tags" id="tags" value="<?php echo implode(",", array_map(function($item){
+					return $item->name;
+				}, $post->get_tags()));?>" />
+			</div>
 	<?php if($post->id > 0):?>
 			<input type="hidden" value="<?php echo $post->id;?>" name="post[id]" />
 			<input type="hidden" value="put" name="_method" />

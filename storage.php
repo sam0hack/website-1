@@ -105,7 +105,7 @@ class storage{
 		return $obj;
 	}
 	function query($sql, $args, $delegate = null){
-		$cmd = $this->create_command($sql, $args);
+		$cmd = $this->create_command($sql, $args);		
 		$result = $cmd->execute();
 		$error_info = $this->provider->errorInfo();
 		$list = array();
@@ -198,6 +198,7 @@ class storage{
 		foreach($things as $item){
 			if($this->has_primary_key($item)){
 				array_push($commands, $this->create_update_command($item, $this->get_primary_key($item)));
+				array_push($commands, $this->create_command("select ROWID as id, * from {$this->table_name} where ROWID=" . $this->get_primary_key($item). ";", null));
 			}else{
 				array_push($commands, $this->create_insert_command($item));
 				array_push($commands, $this->create_command("select ROWID as id, * from {$this->table_name} where ROWID=last_insert_rowid();", null));

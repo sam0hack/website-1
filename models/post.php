@@ -1,5 +1,6 @@
 <?php
 class_exists("model") || require("model.php");
+class_exists("post_tag") || require("post_tag.php");
 class post extends model{
 	function __construct($args = array()){
 		$this->publish_date = gmmktime();
@@ -40,6 +41,8 @@ class post extends model{
 	}
 	private $_tags;
 	function get_tags(){
+		if(count($this->_tags) > 0) return $this->_tags;
+		$this->_tags = storage::find_post_tags(array("where"=>"post_id=:id and owner_id=:owner_id", "args"=>array("id"=>$this->id, "owner_id"=>$this->owner_id)));
 		return $this->_tags;
 	}
 	function set_tags($value){
