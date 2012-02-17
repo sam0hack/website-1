@@ -19,7 +19,7 @@ class profile_resource extends app_resource{
 	function PUT(member $member){
 		$this->member = auth_controller::$current_user;
 		$this->member->signin = $member->signin;
-		if(count($member->password) > 0) $this->member->password = $member->password;
+		if(count($member->password) > 0) $this->member->password = string::password($member->password);
 		$this->member->in_directory = $member->in_directory;
 		$this->member->timestamp = gmmktime();
 		$this->member->colophon = $member->colophon;

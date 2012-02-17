@@ -1,8 +1,4 @@
 chin.should_log = true;
-function widget(id, controller, model, options){
-	var self = view.apply(this, [id, controller, model, options]);
-	return this;
-}
 model.settings = function(obj){
 	var self = model.apply(this, []);
 	var background_url = null;
@@ -101,10 +97,53 @@ model.post = function(obj){
 		}
 	}
 };
+model.view = function(obj){
+	var self = model.apply(this, []);
+	var position = {top: 0, left: 0};
+	var z = 1000;
+	var title = null;
+	this.__defineGetter__("title", function(){
+		return title;
+	});
+	this.__defineSetter__("title", function(v){
+		var old = title;
+		title = v;
+		this.changed("title", old, v);
+	});
+	this.__defineGetter__("position", function(){
+		return position;
+	});
+	this.__defineSetter__("position", function(v){
+		var old = position;
+		position = v;
+		this.changed("position", old, v);
+	});
+	this.__defineGetter__("z", function(){
+		return z;
+	});
+	this.__defineSetter__("z", function(v){
+		var old = z;
+		z = v;
+		this.changed("z", old, v);
+	});
+	if(obj !== null) model.init(obj, this);
+	
+	return this;
+};
 view.tweet_list = function(id, controller, model, options){
 	var self = view.apply(this, [id, controller, model, options]);
 	this.model.posts.subscribe("push", this);
 	this.model.posts.subscribe("pop", this);
+/*	var set_editing = this.set_editing;
+	this.set_editing = function(target, flag, animated){
+		set_editing.apply(this, [flag, animated]);
+		if(!this.is_editing) return;
+		var elem = target.parentNode;
+		while(elem.nodeName !== "ARTICLE"){
+			elem = elem.parentNode;
+		}
+		var header = elem.querySelector("header");
+	};*/
 	return this;
 };
 view.tweet_list.prototype = {
@@ -148,14 +187,14 @@ view.home.prototype = {
 		if(key === "colophon") this.colophon_field.innerHTML = v;
 	}
 };
-widget.post = function(id, controller, model, options){
+view.post = function(id, controller, model, options){
 	var self = view.apply(this, [id, controller, model, options]);
 	this.close_button = this.container.querySelector("button.close");
 	this.model.subscribe("body", this);
 	this.model.subscribe("type", this);
 	return this;
 };
-widget.post.prototype = {
+view.post.prototype = {
 	update: function(key, old, v, m){
 		chin.log([key, old, v]);
 	}
@@ -164,77 +203,33 @@ widget.post.prototype = {
 controller.post = function(delegate, m){
 	var self = controller.apply(this, [delegate, m]);
 	this.post = {body: "", publish_date: new Date()};
-	this.move_delegate = function(e){self.mouse_move(e);};
-	this.up_delegate = function(e){self.mouse_up(e);};
-	this.down_delegate = function(e){self.mouse_down(e);};
-	this.click_delegate = function(e){self.click(e);};
-	this.close_clicked_delegate = function(e){self.close_clicked(e);};
+	this.controller = null;
 	this.keyup_delegate = function(e){self.keyup(e);};
 	this.submit_delegate = function(e){self.submit(e);};
 	this.load_view = function(){
 		var self = this;
-		this.view = new widget.post(document.getElementById("post"), this, this.model);
+		this.view = new view.post(document.getElementById("post"), this, this.model);
 		this.view.container.querySelector("textarea").addEventListener(chin.device.KEYUP, this.keyup_delegate, true);
 		this.view.container.querySelector("form").addEventListener(chin.device.SUBMIT, this.submit_delegate, true);
-		this.view.header.addEventListener(chin.device.MOUSEDOWN, this.down_delegate, true);
-		this.view.close_button.addEventListener(chin.device.MOUSEDOWN, this.close_clicked_delegate, true);
-		this.view.top = this.model.position.top;
-		this.view.left = this.model.position.left;
+		this.model.title = "Write a post";
+		this.controller = new chin.controller.draggable(this, this.model);
+		this.controller.load_view();
 		this.view.hidden = false;
 	};
 	var release = this.release;
 	this.release = function(){
 		if(this.model !== null) this.model.clear();
-		this.view.header.removeEventListener(chin.device.MOUSEDOWN, this.down_delegate, true);
-		this.view.close_button.removeEventListener(chin.device.MOUSEDOWN, this.close_clicked_delegate, true);
 		release.apply(this, []);
 		this.model = null;
+	};
+	this.view_did_unload = function(v){
+		v.container.querySelector("textarea").removeEventListener(chin.device.KEYUP, this.keyup_delegate, true);
+		v.container.querySelector("form").removeEventListener(chin.device.SUBMIT, this.submit_delegate, true);
 	};
 	return this;
 };
 controller.post.prototype = {
-	mouse_down: function(e){
-		this.drag_start(e);
-	}
-	, mouse_up: function(e){
-		this.drag_end(e);
-	}
-	, mouse_move: function(e){
-		this.drag_move(e);
-	}
-	, drag_start: function(e){
-		// stop page from panning on iPhone/iPad - we're moving a note, not the page
-		e.preventDefault();
-		e = (chin.device.CANTOUCH && e.touches && e.touches.length > 0) ? e.touches[0] : e;
-		this.view.start_x = e.clientX - this.view.container.offsetLeft;
-		this.view.start_y = e.clientY - this.view.container.offsetTop;
-		this.view.z = 1000;
-		window.addEventListener(chin.device.MOUSEMOVE, this.move_delegate, true);
-		window.addEventListener(chin.device.MOUSEUP, this.up_delegate, true);
-		return false;
-	}
-	, drag_move: function(e){
-		// stop page from panning on iPhone/iPad - we're moving a note, not the page
-		e.preventDefault();
-		e = (chin.device.CANTOUCH && e.touches && e.touches.length > 0) ? e.touches[0] : e;
-		if(e.clientY - this.view.start_y < 0) return false;
-		if(e.clientX - this.view.start_x < 0) return false;
-		this.view.left = e.clientX - this.view.start_x;
-		this.view.top = e.clientY - this.view.start_y;
-		return false;
-	}
-	, drag_end: function(e){
-		window.removeEventListener(chin.device.MOUSEMOVE, this.move_delegate, true);
-		window.removeEventListener(chin.device.MOUSEUP, this.up_delegate, true);
-		var new_position = {top: this.view.top, left: this.view.left};
-		this.model.position = new_position;
-		return false;
-	}
-	, close_clicked: function(e){
-		this.view.hidden = true;
-		this.delegate.view_did_unload(this);
-	}
-	, keyup: function(e){
+	keyup: function(e){
 		this.post.body = e.target.value;
 		this.post.publish_date = new Date();
 	}
@@ -245,26 +240,44 @@ controller.post.prototype = {
 		this.model.posts = posts;
 		this.post = {body: "", publish_date: new Date()};
 		this.delegate.save_post(this.post.body);
-		this.close_clicked(e);
+		this.controller.close();
 		posts = null;
 	}
 };
 controller.tweet_list = function(delegate, m){
 	var self = controller.apply(this, [delegate, m]);
+	this.controller = null;
+	var view_model = localStorage.tweet_list_view;
+	if(view_model){
+		view_model = JSON.parse(view_model);
+	}else{
+		view_model = {position: {top: 0, left: 0}, title:"Tweet List", z: 1000};
+	}
+	this.view_model = new model.view(view_model);
+	this.view_model.subscribe("position", this);
+	var edit_button_clicked_delegate = function(e){self.edit_button_clicked(e);};
 	this.load_view = function(){
-		this.view = new view.tweet_list(document.querySelector("body>section>aside"), this, this.model);
+		this.view = new view.tweet_list(document.getElementById("post_list"), this, this.model);
+		this.view.container.addEventListener("click", edit_button_clicked_delegate, true);
+		this.view.show();
 	};
 	var release = this.release;
 	this.release = function(){
 		if(this.model !== null) this.model.clear();
-		if(this.view){
-		}
 		release.apply(this, []);
 		this.model = null;
 	};
 	return this;
 };
-
+controller.tweet_list.prototype.edit_button_clicked = function(e){
+	if(e.target.className !== "edit") return;
+	e.preventDefault();
+	this.view.set_editing(e.target, e.target.innerHTML === "Edit", true);
+	e.target.innerHTML = e.target.innerHTML === "Edit" ? "Done" : "Edit";
+};
+controller.tweet_list.prototype.update = function(key, old, v, obj){
+	localStorage.tweet_list_view = JSON.stringify(obj);
+};
 controller.home = function(delegate, m){
 	var self = controller.apply(this, [delegate, m]);
 	this.load_view = function(){
@@ -273,8 +286,6 @@ controller.home = function(delegate, m){
 	var release = this.release;
 	this.release = function(){
 		if(this.model !== null) this.model.clear();
-		if(this.view){
-		}
 		release.apply(this, []);
 		this.model = null;
 	};
@@ -283,13 +294,12 @@ controller.home = function(delegate, m){
 controller.home.prototype = {
 
 };
-widget.tab_bar = function(id, controller, model, options){
-	var self = widget.apply(this, [id, controller, model, options]);
-	this.close_button = this.container.querySelector("button.close");
+view.tab_bar = function(id, controller, model, options){
+	var self = view.apply(this, [id, controller, model, options]);
 	return this;
 };
-widget.photo_browser = function(id, controller, model, options){
-	var self = widget.apply(this, [id, controller, model, options]);
+view.photo_browser = function(id, controller, model, options){
+	var self = view.apply(this, [id, controller, model, options]);
 	this.header.style.display = "none";
 	this.list = chin.dom(this.container.querySelector("ul"));
 	this.model.subscribe("push", this);
@@ -297,7 +307,7 @@ widget.photo_browser = function(id, controller, model, options){
 	this.model.subscribe("remove", this);
 	return this;
 };
-widget.photo_browser.prototype = {
+view.photo_browser.prototype = {
 	add: function(item){
 		if(typeof(item) === "string") this.list.append(chin.dom("li").html(item));
 		else this.list.append(chin.dom("li").append(chin.dom("button").html("x").set({class: "close"}).elem).append(chin.dom("a").set({href:"", title:item.title}).append(chin.dom("img").set({src: item.src, alt:item.title}).elem).elem).elem);
@@ -312,14 +322,14 @@ widget.photo_browser.prototype = {
 		if(key === "remove") this.remove(old);
 	}
 };
-widget.settings = function(id, controller, m, options){
-	var self = widget.apply(this, [id, controller, m, options]);
+view.settings = function(id, controller, m, options){
+	var self = view.apply(this, [id, controller, m, options]);
 	this.header.style.display = "none";		
 	return this;
 };
 controller.photo_browser = function(delegate, m){
 	var self = controller.apply(this, [delegate, m]);
-	this.tab_bar_item = {title:"Display", image: new Image(), tag: 0};
+	this.tab_bar_item = {title:"Background", image: new Image(), tag: 0};
 	this.change_delegate = function(e){self.changed(e);};
 	this.progress_delegate = function(e){self.progress(e);};
 	this.uploaded_delegate = function(e){self.uploaded(e);};
@@ -327,8 +337,8 @@ controller.photo_browser = function(delegate, m){
 	this.submit_delegate = function(e){self.submit(e);};
 	this.load_view = function(){
 		this.model = new model.list([]);
-		this.view = new widget.photo_browser("display", this, this.model);
-		if(this.view.title !== null) this.tab_bar_item.title = this.view.title;
+		this.view = new view.photo_browser("display", this, this.model);
+		this.tab_bar_item.title = this.view.title;
 		this.view.container.querySelector("input[type='file']").addEventListener("change", this.change_delegate, true);
 		this.view.container.querySelector("ul").addEventListener("click", this.item_clicked_delegate, true);
 		this.view.container.querySelector("form").addEventListener(chin.device.SUBMIT, this.submit_delegate, true);
@@ -352,13 +362,14 @@ controller.photo_browser = function(delegate, m){
 	var release = this.release;
 	this.release = function(){
 		if(this.model !== null) this.model.clear();
-		if(this.view){
-			this.view.container.querySelector("input[type='file']").removeEventListener("change", this.change_delegate, true);				
-			this.view.container.querySelector("ul").removeEventListener("click", this.item_clicked_delegate, true);
-			this.view.container.querySelector("form").removeEventListener(chin.device.SUBMIT, this.submit_delegate, true);
-		}
 		release.apply(this, []);
 		this.model = null;
+	};
+	this.view_did_unload = function(v){
+		v.container.querySelector("input[type='file']").removeEventListener("change", this.change_delegate, true);				
+		v.container.querySelector("ul").removeEventListener("click", this.item_clicked_delegate, true);
+		v.container.querySelector("form").removeEventListener(chin.device.SUBMIT, this.submit_delegate, true);
+		this.delegate.view_did_unload(v);
 	};
 	return this;
 };
@@ -455,7 +466,6 @@ controller.photo_browser.prototype = {
 			if(e.target.readyState !== XMLHttpRequest.DONE) return;
 			if(e.target.status === 200){
 				var result = JSON.parse(e.target.responseText);
-				chin.log(result);
 				for(i=0;i<result.length;i++){
 					if(result[i].error !== null){
 						self.delegate.add_user_message(result[i].error);
@@ -488,16 +498,17 @@ controller.photo_browser.prototype = {
 	}
 	, progress: function(e){
 	}
+	, should_close: function(){
+		if(!this.view) return;
+		this.view.hide();
+	}
 }
 
 controller.tab_bar = function(delegate, m){
 	var self = controller.apply(this, [delegate, m]);
 	var item = null;
-	this.move_delegate = function(e){self.mouse_move(e);};
-	this.up_delegate = function(e){self.mouse_up(e);};
-	this.down_delegate = function(e){self.mouse_down(e);};
+	this.view_controller = null;
 	this.click_delegate = function(e){self.click(e);};
-	this.close_clicked_delegate = function(e){self.close_clicked(e);};
 	this.__defineGetter__("item", function(){
 		return item;
 	});
@@ -507,31 +518,23 @@ controller.tab_bar = function(delegate, m){
 	this.controllers = {};
 	this.load_view = function(){
 		var self = this;
-		this.view = new widget.tab_bar("info", this, null);
+		this.view = new view.tab_bar("info", this, null);
 		this.view.container.querySelector("footer.tabs").addEventListener(chin.device.CLICK, this.click_delegate, true);
-		this.view.header.addEventListener(chin.device.MOUSEDOWN, this.down_delegate, true);
-		this.view.close_button.addEventListener(chin.device.MOUSEDOWN, this.close_clicked_delegate, true);
-		this.controllers[this.model.active_tab_id].load_view();
-		this.controllers[this.model.active_tab_id].view.hidden = false;
 		this.view.title = this.controllers[this.model.active_tab_id].tab_bar_item.title;
-		this.view.top = this.model.position.top;
-		this.view.left = this.model.position.left;
+		this.controllers[this.model.active_tab_id].load_view();
+		this.controllers[this.model.active_tab_id].view.show();
+		this.view_controller = new chin.controller.draggable(this, this.model);
+		this.view_controller.load_view();
 		this.view.hidden = false;
 	};
 	var release = this.release;
 	this.release = function(){
-		this.view.container.querySelector("footer.tabs").removeEventListener(chin.device.CLICK, this.click_delegate, true);
-		this.view.header.removeEventListener(chin.device.MOUSEDOWN, this.down_delegate, true);
-		this.view.close_button.removeEventListener(chin.device.MOUSEDOWN, this.close_clicked_delegate, true);
 		release.apply(this, []);
 		this.model = null;
-	}
-	this.view_did_unload = function(controller){
-		for(key in this.controllers){
-			this.controllers[key].release();
-			delete this.controllers[key];
-		}
-		this.controllers = null;
+	};
+	this.view_did_unload = function(v){
+		this.view.container.querySelector("footer.tabs").removeEventListener(chin.device.CLICK, this.click_delegate, true);
+		this.delegate.view_did_unload(this.view);
 	};
 	return this;
 };
@@ -540,7 +543,7 @@ controller.tab_bar.prototype = {
 		e.preventDefault();
 		this.model.active_tab_id = e.target.id;
 		for(key in this.controllers){
-			if(this.controllers[key]) this.controllers[key].release();
+			if(this.controllers[key]) this.controllers[key].should_close();
 		}
 		if(this.controllers[this.model.active_tab_id]){
 			this.view.title = this.controllers[this.model.active_tab_id].tab_bar_item.title;
@@ -553,48 +556,8 @@ controller.tab_bar.prototype = {
 	, photo_was_deleted: function(result){
 		this.delegate.photo_was_deleted(result);
 	}
-	, mouse_down: function(e){
-		this.drag_start(e);
-	}
-	, mouse_up: function(e){
-		this.drag_end(e);
-	}
-	, mouse_move: function(e){
-		this.drag_move(e);
-	}
-	, drag_start: function(e){
-		// stop page from panning on iPhone/iPad - we're moving a note, not the page
-		e.preventDefault();
-		e = (chin.device.CANTOUCH && e.touches && e.touches.length > 0) ? e.touches[0] : e;
-		this.view.start_x = e.clientX - this.view.container.offsetLeft;
-		this.view.start_y = e.clientY - this.view.container.offsetTop;
-		this.view.z = 1000;
-		window.addEventListener(chin.device.MOUSEMOVE, this.move_delegate, true);
-		window.addEventListener(chin.device.MOUSEUP, this.up_delegate, true);
-		return false;
-	}
-	, drag_move: function(e){
-		// stop page from panning on iPhone/iPad - we're moving a note, not the page
-		e.preventDefault();
-		e = (chin.device.CANTOUCH && e.touches && e.touches.length > 0) ? e.touches[0] : e;
-		if(e.clientY - this.view.start_y < 0) return false;
-		if(e.clientX - this.view.start_x < 0) return false;
-		this.view.left = e.clientX - this.view.start_x;
-		this.view.top = e.clientY - this.view.start_y;
-		return false;
-	}
-	, drag_end: function(e){
-		window.removeEventListener(chin.device.MOUSEMOVE, this.move_delegate, true);
-		window.removeEventListener(chin.device.MOUSEUP, this.up_delegate, true);
-		var new_position = {top: this.view.top, left: this.view.left};
-		this.model.position = new_position;
-		return false;
-	}
-	, close_clicked: function(e){
-		for(key in this.controllers){
-			if(this.controllers[key]) this.controllers[key].release();
-			this.delegate.view_did_unload(this.controllers[key]);
-		}
+	, should_close: function(){
+		this.view_controller.close();
 	}
 };
 controller.settings = function(delegate, m){
@@ -602,7 +565,7 @@ controller.settings = function(delegate, m){
 	this.tab_bar_item = {title:"Settings", image: new Image(), tag: 1};
 	this.keyup_delegate = function(e){self.keyup(e);};
 	this.load_view = function(){
-		this.view = new widget.settings("settings", this, null);
+		this.view = new view.settings("settings", this, null);
 		if(this.view.title !== null) this.tab_bar_item.title = this.view.title;
 		this.view.container.querySelector("textarea").addEventListener(chin.device.KEYUP, this.keyup_delegate, true);
 		this.view.container.querySelector("input").addEventListener(chin.device.KEYUP, this.keyup_delegate, true);
@@ -610,17 +573,24 @@ controller.settings = function(delegate, m){
 	};
 	var release = this.release;
 	this.release = function(){
-		if(this.view !== null){
-			this.view.container.querySelector("textarea").removeEventListener(chin.device.KEYUP, this.keyup_delegate, true);				
-		}
+		this.tab_bar_item =  null;
 		release.apply(this, []);
+	};
+	this.view_did_unload = function(v){
+		v.container.querySelector("textarea").removeEventListener(chin.device.KEYUP, this.keyup_delegate, true);				
+		v.container.querySelector("input").removeEventListener(chin.device.KEYUP, this.keyup_delegate, true);
+		this.delegate.view_did_unload(v);
 	};
 	return this;
 };
 controller.settings.prototype = {
 	keyup: function(e){
-		if(e.target.name === "colophon") this.model.colophon = e.target.value;
+		if(e.target.name === "member[colophon]") this.model.colophon = e.target.value;
 		if(e.target.name === "site_title") this.model.site_title = e.target.value;
+	}
+	, should_close: function(){
+		if(!this.view) return;
+		this.view.hide();
 	}
 };
 (function(){
@@ -654,10 +624,8 @@ controller.settings.prototype = {
 			post = new model.post(JSON.parse(post));
 		}
 		post.posts = posts;
-		var tweet_list_controller = new controller.tweet_list(this, post);
 		home_controller = new controller.home(this, settings);
 		home_controller.load_view();
-		tweet_list_controller.load_view();
 		var self = {
 			add_subview: function(view){
 			}
@@ -672,13 +640,12 @@ controller.settings.prototype = {
 			}
 			, edit_link_clicked: function(e){
 				if(tab_bar_controller !== null){
-					for(key in tab_bar_controller.controllers){
-						this.view_did_unload(tab_bar_controller.controllers[key]);
-					}
+					tab_bar_controller.should_close();
+					edit_link.innerHTML = "Edit";
 				}else{
 					tab_bar_controller = new controller.tab_bar(this, settings);
-					var photo_browser_controller = new controller.photo_browser(this, null);
-					var settings_controller = new controller.settings(this, settings);
+					photo_browser_controller = new controller.photo_browser(this, null);
+					settings_controller = new controller.settings(this, settings);
 					tab_bar_controller.controllers.photo_browser_controller = photo_browser_controller;
 					tab_bar_controller.controllers.settings_controller = settings_controller;
 					for(key in tab_bar_controller.controllers){
@@ -698,17 +665,19 @@ controller.settings.prototype = {
 				aside.elem.innerHTML += message + "<br />";
 				aside.show();
 			}
-			, view_did_unload: function(c){
-				if(c instanceof controller.post){
+			, view_did_unload: function(v){
+				if(v instanceof view.post){
 					chin.log("post was closed");
-				}else if(c instanceof controller.tweet_list){
-					chin.log("tweet list was closed");
 				}else if(tab_bar_controller !== null){
 					if(should_save_background) this.save_background(null);
 					if(should_save_settings) this.save_settings(null);
+					photo_browser_controller.release();
+					settings_controller.release();
 					tab_bar_controller.release();
+					photo_browser_controller = null;
+					settings_controller = null;
 					tab_bar_controller = null;
-					edit_link.innerHTML = "Edit";					
+					edit_link.innerHTML = "Edit";			
 				}
 			}
 			, application_did_finish_launching: function(){
@@ -850,11 +819,12 @@ controller.settings.prototype = {
 				xhr.send(data);
 			}			
 		};
+		var settings_controller = null;
+		var photo_browser_controller = null;
 		var edit_click_delegate = function(e){self.edit_link_clicked();};
 		var post_click_delegate = function(e){self.post_link_clicked(e);};
 		self.application_did_finish_launching();
 		return self;
 	})();
 	chin.log(app);
-	
 })();

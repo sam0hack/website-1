@@ -27,6 +27,10 @@
 				<input type="text" value="<?php echo $member->signin;?>" name="member[signin]" id="member[signin]" />
 			</div>
 			<div>
+				<label for="password">Enter a secret that know one else knows</label>
+				<input type="password" name="member[password]" id="password" />
+			</div>
+			<div>
 				<label for="member[colophon]">You want people to know about you</label>
 				<textarea name="member[colophon]"><?php echo $member->colophon;?></textarea>
 			</div>

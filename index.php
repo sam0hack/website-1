@@ -59,6 +59,12 @@ class repo{
 		}
 		$db->save($tags);
 	}
+	function should_delete_post($publisher, $post){
+		$tags_db = new storage(array("table_name"=>"post_tags"));
+		$db = new storage(array("table_name"=>"posts"));
+		$tags_db->delete(array("post_id"=>(int)$post->id, "owner_id"=>(int)$post->owner_id), "post_id=:post_id and owner_id=:owner_id");
+		$db->delete(array("id"=>(int)$post->id, "owner_id"=>(int)$post->owner_id), "ROWID=:id and owner_id=:owner_id");
+	}
 	function should_save_story($publisher, $story){
 		$db = new storage(array("table_name"=>"stories"));
 		$db->save(array($story));
@@ -121,7 +127,9 @@ notification_center::subscribe("begin_request", null, new auth_controller());
 notification_center::subscribe("begin_request", null, $plugin_controller);
 $r = new repo();
 notification_center::subscribe("should_save_post", null, $r);
+notification_center::subscribe("should_delete_post", null, $r);
 notification_center::subscribe("should_save_story", null, $r);
 notification_center::subscribe("should_save_member", null, $r);
 $request_controller = new front_controller();
+// This is where the response is rendered.
 echo $request_controller->execute(new request($_SERVER, $_REQUEST, $_FILES, $_POST, $_GET));

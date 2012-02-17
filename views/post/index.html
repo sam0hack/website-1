@@ -1,16 +1,11 @@
-<h1>Posts</h1>
-<form action="<?php echo resource::url_for("posts");?>" method="post">
-	<fieldset>
-		<legend>Add a post</legend>
-		<div>
-			<label for="post[title]">Title</label>
-			<input type="text" name="post[title]" value="" />
-		</div>
-		<div>
-			<textarea name="post[body]"></textarea>
-		</div>
-		<footer>
-			<button type="submit">Save</button>
-		</footer>
-	</fieldset>
-</form>
+<article>
+	<header>
+		<h1><?php echo $post->title;?></h1>
+	</header>
+	<div>
+		<?php echo $post->body;?>
+	</div>
+	<footer>
+
+	</footer>
+</article>

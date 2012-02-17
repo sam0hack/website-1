@@ -37,7 +37,7 @@ class storage{
 		$db = new storage(array("table_name"=>$table_name));
 		$where = null;
 		$order_by = null;
-		$limit = 0;
+		$limit = $just_one ? 1 : 0;
 		$offset = 0;
 		$columns = "ROWID as id, *";
 		$params = null;
@@ -51,11 +51,11 @@ class storage{
 			return $new_object;
 		};
 		if($args !== null && count($args) > 0 && $args[0] !== null){
-			$arg = (object)$args[0];
+			$arg = (object)$args[0];			
 			$where = property_exists($arg, "where") ? $arg->where : $where;
 			$order_by = property_exists($arg, "order_by") ? $arg->order_by : $order_by;
-			$limit = property_exists($arg, "limit") ? $arg->limit : $limit;
-			$offset = property_exists($arg, "offset") ? $arg->offset : $offset;
+			$limit = property_exists($arg, "limit") ? (int)$arg->limit : $limit;
+			$offset = property_exists($arg, "offset") ? (int)$arg->offset : $offset;
 			$columns = property_exists($arg, "columns") ? $arg->columns : $columns;
 			$params = property_exists($arg, "args") ? $arg->args : $params;
 			$delegate = property_exists($arg, "delegate") ? $arg->delegate : $delegate;

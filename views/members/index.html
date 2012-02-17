@@ -1,0 +1,7 @@
+<ul>
+<?php foreach($members as $member):?>
+	<li>
+		<a href="<?php echo resource::url_for($member->signin);?>" title="<?php echo $member->name;?>'s Site"><?php echo $member->name;?></a>
+	</li>
+<?php endforeach;?>
+</ul>

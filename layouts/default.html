@@ -12,7 +12,6 @@
 <html>
 	<head>
 		<meta charset="utf-8"/>
-		<meta name="viewport" content="width=device-width; initial-scale=1.0">
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="translucent black" />
 		<meta name="format-detection" content="telephone=yes" />
@@ -40,7 +39,7 @@
 	</head>
     <body class="<?php echo $resource_name;?>">
 		<header>
-			<h1><a href="<?php echo app_resource::url_for_member(null);?>" title="<?php echo (site::$member->colophon !== null ? site::$member->colophon : site::$member->name . " 6d site.");?>"><?php echo site::$member->name;?></a></h1>
+			<h1><a href="<?php echo app_resource::url_for_member(null);?>" title="<?php echo (site::$member->colophon !== null ? site::$member->colophon : site::$member->name . " 6d site.");?>"><?php echo site::$member->settings()->site_title;?></a></h1>
 			<p><?php echo (site::$member->colophon !== null ? site::$member->colophon : null);?></p>
 			<?php if(site::$member->settings()->logo_url !== null):?>
 			<img src="<?php echo site::$member->settings()->logo_url;?>" alt="<?php echo site::$member->name;?>'s Logo" />
@@ -60,15 +59,18 @@
 				<a href="<?php echo resource::url_for("signin");?>" title="signin">Signin</a>
 				<?php endif;?>
 			</nav>
+			<p>Peak Memory Usage: <?php echo memory_get_peak_usage()/1048576;?>MB</p>
 		</footer>
 		<?php if(auth_controller::is_authed()):?>
-		<section id="post" class="draggable" style="display: none;">
-			<button type="button" class="close">&otimes;</button>
-			<header>Post</header>
+		<section id="post" style="display: none;">
 			<aside></aside>
 			<form action="<?php echo resource::url_for("posts");?>" method="post">
 				<fieldset>
 					<legend>Short and Sweet</legend>
+					<div>
+						<label for="post_title">Title</label>
+						<input type="text" name="post[title]" id="post_title" placeholder="Put your title here" />
+					</div>
 					<div>
 						<label for="post_body">Message</label>
 						<textarea cols="22" name="post[body]" id="post_body" placeholder="Write something in here"></textarea>
@@ -82,12 +84,10 @@
 			</form>
 			<footer></footer>
 		</section>
-		<section id="info" class="draggable tab_bar" style="display: none;">
-			<button type="button" class="close">&otimes;</button>
-			<header></header>
+		<section id="info" class="tab_bar" style="display: none;">
 			<div class="view" id="display" style="display: none;">
 				<section>
-					<header>Background</header>
+					<header><span>Background</span></header>
 					<aside></aside>
 					<ul></ul>
 					<form action="<?php echo resource::url_for("photos");?>" method="post">
@@ -100,7 +100,7 @@
 			</div>
 			<div class="view" id="settings" style="display: none;">
 				<section>
-					<header>Settings</header>
+					<header><span>Settings</span></header>
 					<aside></aside>
 					<form action="<?php echo resource::url_for("settings");?>" method="post">
 						<fieldset>

@@ -56,6 +56,9 @@ var view = function(id, controller, model, options){
 	this.__defineGetter__("header", function(){
 		return header;
 	});
+	this.__defineSetter__("header", function(v){
+		header = v;
+	});
 	this.__defineGetter__("hidden", function(){
 		return this.container.style.display === "none";
 	});
@@ -63,13 +66,13 @@ var view = function(id, controller, model, options){
 		this.container.style.display = v ? "none" : "block";
 	});
 	this.__defineGetter__("is_editing", function(){
-		return this.container.className.indexOf(" edit") > -1;
+		return /\s?edit\s?/.test(this.container.className);
 	});
 	this.__defineGetter__("title", function(){
-		return header.innerHTML;
+		return header.querySelector("span").innerHTML;
 	});
 	this.__defineSetter__("title", function(v){
-		header.innerHTML = v;
+		header.querySelector("span").innerHTML = v;
 	});
 	this.__defineGetter__("model", function(){
 		return model;
@@ -80,22 +83,24 @@ var view = function(id, controller, model, options){
 	this.set_editing = function(flag, animated){
 		if(flag){
 			var c = this.container.className.split(" ");
+			var separator = c.length === 1 ? "" : " ";
 			c.push("edit");
-			this.container.className = c.join(" ");
+			this.container.className = c.join(separator);
 		}else{
 			this.container.className = this.container.className.replace(/\s?edit\s?/, "");
 		}
 	};
 	this.add_view = function(view){
 		this.sub_views.push(view);
+		this.container.appendChild(view.container);
 	};
 	this.show = function(delegate){
 		if(delegate) return delegate(this);
-		this.container.style.display = "block";
+		this.hidden = false;
 	};
 	this.hide = function(delegate){
 		if(delegate) return delegate(this);
-		this.container.style.display = "none";
+		this.hidden = true;
 	};
 	this.add_class_name = function(elem, name){
 		if(elem.className.indexOf(name) === -1){
@@ -114,7 +119,7 @@ var view = function(id, controller, model, options){
 			}
 			elem.className = new_ones.join(" ");
 		}
-	}
+	};	
 	return this;
 }
 function field(elem){

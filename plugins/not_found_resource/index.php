@@ -6,6 +6,8 @@ class not_found_resource extends app_resource{
 	}
 	public $requested_resource;
 	function resource_not_found($publisher, $info){
+		// If the info parameter is NOT a string, or rather an object, assume that it's a resource and someone else has handle the not found notification appropriately. No reason to do somethere here.
+		if(is_object($info)) return $info;
 		$this->requested_resource = $publisher;
 		$this->request = $publisher->request;
 		$this->url = $publisher->url;		

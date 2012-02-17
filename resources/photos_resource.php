@@ -1,6 +1,7 @@
 <?php
 class_exists("app_resource") || require("app_resource.php");
 class_exists("media") || require("models/media.php");
+class_exists("file_info") || require("lib/file_info.php");
 class photos_resource extends app_resource{
 	public function __construct($request, $url){
 		parent::__construct($request, $url);
@@ -88,11 +89,9 @@ class photos_resource extends app_resource{
 		if(in_array($this->url->file_type, array("jpg", "png", "gif", "tiff"))){
 			$parts = explode("/", url_parser::get_r($this->request));
 			if(count($parts) > 5) $path .= "/" . $parts[count($parts)-1];
-			$finfo = finfo_open(FILEINFO_MIME_TYPE);
-			$info = finfo_file($finfo, resource::get_absolute_path() . "/$path");
-			finfo_close($finfo);
+			$info = new file_info(resource::get_absolute_path() . "/$path");
 			$this->output = file_get_contents($path);
-			$this->headers[] = new http_header(array("Content-Type"=>$info));
+			$this->headers[] = new http_header(array("Content-Type"=>$info->content_type));
 			$this->headers[] = new http_header(array("Accept-Ranges"=>"bytes"));
 			$this->headers[] = new http_header(array("Content-Length"=>filesize($path)));
 			$this->headers[] = new http_header(array("Last-Modified"=>gmdate("D, d M Y G:i:s T", filemtime($path))));

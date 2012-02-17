@@ -18,6 +18,8 @@ class post extends model{
 	public $owner_id;
 	public $type;
 	public $settings;
+	public $url;
+	
 	private $_settings;
 	static function find($sql, $obj){
 		$db = new storage(array("table_name"=>"posts", "primary_key_field"=>"id"));
@@ -42,5 +44,23 @@ class post extends model{
 	}
 	function set_tags($value){
 		$this->_tags = $value;
+	}
+	static function make_url(post $post){
+		$title = $post->title;
+		if(strlen($post->title) > 0){
+			$title = preg_replace("/[\s\.]+/", "-", strip_tags($post->title));
+			$title = preg_replace("/[&\"\',]+/", "", $title);
+			$title = strtolower($title);
+		}
+		return $title;
+	}
+	static function sanitize_url(post $post){
+		if(strlen($post->url) === 0) return null;
+		$url = preg_replace("/[\s+]/", "-", strip_tags($post->url));
+		return $url;
+	}
+	static function sanitize_name(post $post){
+		$name = preg_replace("/[\s+]/", "", strip_tags($post->name));
+		return $name;
 	}
 }

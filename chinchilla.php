@@ -27,7 +27,7 @@ class front_controller{
 		if(array_key_exists("_method", $request->request)) $http_method = strtoupper($request->request["_method"]);
 		try{
 			if(!method_exists($this->resource, $http_method)) $this->resource = filter_center::publish("resource_not_found", $this->resource, $this->resource->resource_name);
-			$request->output = $this->send($this->resource, $http_method, $request);
+			$request->output = $this->send($this->resource, $http_method, $this->resource->request);
 		}catch(Exception $e){
 			$this->resource->status = new http_status(array("code"=>500, "message"=>"Internal error occurred"));
 			$warning = $e->getMessage() . "-" . str_replace(PHP_EOL, " ", $e->getTraceAsString());				
@@ -60,7 +60,7 @@ class front_controller{
 				if($key > count($args) - 1) break;
 				$hash[$parameter->getName()] = $args[$key];
 			}
-		}		
+		}
 		$args = request_argument_mapper::map($resource, $parameters, $request, $hash);
 		notification_center::publish("before_calling_http_method", $resource, $args);
 		$result = $method_info->invokeArgs($resource, $args);
@@ -129,8 +129,11 @@ class magic_quotes_remover{
 		// Return null if it is because stripslashes returns an empty string for null.
 		if($info === null) return $info;
 		if(is_object($info) || is_array($info)) return $info;
-		if(function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) return stripslashes($info);
-        return $info;
+		return self::execute($info);
+	}
+	static function execute($value){
+		if(function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) return stripslashes($value);
+		return $value;
 	}
 }
 class object_populator_from_request{
@@ -145,7 +148,7 @@ class object_populator_from_request{
 			if(!$reflector->hasProperty($key)) continue;
 			$property = $reflector->getProperty($key);
 			if(!$property->isPublic()) continue;
-			$obj->{$key} = $value;
+			$obj->{$key} = magic_quotes_remover::execute($value);
 		}
 		return $obj;
 	}

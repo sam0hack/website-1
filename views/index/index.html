@@ -1,18 +1,45 @@
 <?php if($most_recent_post !== null):?>
 <article>
-	<h1><?php echo $most_recent_post->title;?></h1>
-	<p><?php echo $most_recent_post->body;?></p>
-	<footer><time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time></footer>
+	<header><h1><?php echo $most_recent_post->title;?></h1></header>
+	<div><?php echo $most_recent_post->body;?></div>
+	<footer>
+		<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
+		<?php if(auth_controller::is_authed() && auth_controller::$current_user->id === $most_recent_post->owner_id):?>
+		<form method="post" action="<?php echo app_resource::url_for_member("posts");?>" class="delete">
+			<input type="hidden" name="_method" value="delete" />
+			<input type="hidden" name="post[id]" value="<?php echo $most_recent_post->id;?>" />
+			<button type="submit">Delete</button>
+		</form>
+		<?php endif;?>
+	</footer>
 </article>
-<aside>
+<aside id="post_list">
 	<?php foreach($posts as $post):?>
-	<article>
+	<article id="post_<?php echo $post->id;?>">
 		<header><h2><?php echo $post->title;?></h2></header>
 		<div><?php echo $post->body;?></div>
 		<footer>
 			<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
+			<?php if(auth_controller::is_authed() && auth_controller::$current_user->id === $post->owner_id):?>
+			<form method="post" action="<?php echo app_resource::url_for_member("posts");?>" class="delete">
+				<input type="hidden" name="_method" value="delete" />
+				<input type="hidden" name="post[id]" value="<?php echo $post->id;?>" />
+				<button type="submit">Delete</button>
+			</form>
+			<form method="post" action="<?php echo app_resource::url_for_member("post");?>" class="edit">
+				<input type="hidden" name="post[id]" value="<?php echo $post->id;?>" />
+				<button type="submit" class="edit">Edit</button>				
+			</form>
+			<?php endif;?>
 		</footer>
 	</article>
 	<?php endforeach;?>
+	<?php if(count($posts) > 0):?>
+	<footer>
+		<nav>
+			<a href="<?php echo app_resource::url_for_member(null, array("offset"=>$offset+5, "limit"=>$limit));?>" title="Page <?php echo $offset;?> of <?php echo site::$member->name;?>'s posts" id="more_link">more</a>
+		</nav>
+	</footer>
+	<?php endif;?>
 </aside>
 <?php endif;?>
