@@ -6,6 +6,11 @@ class output_compressor{
 		return string::strip_whitespace($output);
 	}
 }
+class chinchilla{
+	static function version(){
+		return 1.0;
+	}
+}
 class console{
 	static function log($v){
 		if(is_object($v)) $v = json_encode($v);
