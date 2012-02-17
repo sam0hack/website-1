@@ -10,6 +10,9 @@ class chinchilla{
 	static function version(){
 		return 1.0;
 	}
+	static function description(){
+		return "Chinchilla is a RESTful library in PHP.";
+	}
 }
 class console{
 	static function log($v){
