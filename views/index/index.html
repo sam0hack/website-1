@@ -10,6 +10,10 @@
 			<input type="hidden" name="post[id]" value="<?php echo $most_recent_post->id;?>" />
 			<button type="submit">Delete</button>
 		</form>
+		<form method="post" action="<?php echo app_resource::url_for_member("post");?>" class="edit">
+			<input type="hidden" name="post[id]" value="<?php echo $most_recent_post->id;?>" />
+			<button type="submit" class="edit">Edit</button>				
+		</form>
 		<?php endif;?>
 	</footer>
 </article>
