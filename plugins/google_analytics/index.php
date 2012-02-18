@@ -4,7 +4,7 @@ class google_analytics{
 		$tag = <<<eos
 <script type="text/javascript">
   var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-26060958-1']);
+  _gaq.push(['_setAccount', 'UA-8615536-6']);
   _gaq.push(['_trackPageview']);
   (function() {
     var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
