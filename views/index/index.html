@@ -1,7 +1,7 @@
 <?php if($most_recent_post !== null):?>
 <article>
-	<header><h1><?php echo $most_recent_post->title;?></h1></header>
-	<div><?php echo $most_recent_post->body;?></div>
+	<header><h1><?php echo post::get_title($most_recent_post);?></h1></header>
+	<div><?php echo post::get_body($most_recent_post);?></div>
 	<footer>
 		<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
 		<?php if(auth_controller::is_authed() && auth_controller::$current_user->id === $most_recent_post->owner_id):?>
@@ -20,8 +20,8 @@
 <aside id="post_list">
 	<?php foreach($posts as $post):?>
 	<article id="post_<?php echo $post->id;?>">
-		<header><h2><?php echo $post->title;?></h2></header>
-		<div><?php echo $post->body;?></div>
+		<header><h2><?php echo post::get_title($post);?></h2></header>
+		<div><?php echo post::get_body($post);?></div>
 		<footer>
 			<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
 			<?php if(auth_controller::is_authed() && auth_controller::$current_user->id === $post->owner_id):?>

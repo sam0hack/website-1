@@ -47,12 +47,26 @@
 			<div id="user_message" style="<?php echo view::get_user_message() === null ? 'display: none;' : null;?>"><?php echo view::get_user_message();?></div>
 		</header>	
 		<section>
+			<?php if(auth_controller::is_authed()):?>
+			<form action="<?php echo resource::url_for("posts");?>" method="post" id="post">
+				<fieldset>
+					<div>
+						<label for="post_body">Message</label>
+						<textarea cols="37" rows="2" name="post[body]" id="post_body" placeholder="Write something in here"></textarea>
+					</div>
+					<input type="hidden" name="post[type]" value="tweet" />
+					<input type="hidden" name="post[status]" value="public" />
+					<footer>
+						<button type="submit">Post</button>
+					</footer>
+				</fieldset>
+			</form>
+			<?php endif;?>
 			<?php echo $output;?>
 		</section>
 		<footer>
 			<nav>
 				<?php if(auth_controller::is_authed()):?>
-				<a href="javascript:void(0);" title="post" id="post_link">Write</a>
 				<a href="javascript:void(0);" title="edit" id="edit_link">Edit</a>
 				<a href="<?php echo resource::url_for("signout");?>" title="signout" id="signout_controller">Signout</a>
 				<?php else:?>
@@ -62,28 +76,6 @@
 			<p>Peak Memory Usage: <?php echo memory_get_peak_usage()/1048576;?>MB</p>
 		</footer>
 		<?php if(auth_controller::is_authed()):?>
-		<section id="post" style="display: none;">
-			<aside></aside>
-			<form action="<?php echo resource::url_for("posts");?>" method="post">
-				<fieldset>
-					<legend>Short and Sweet</legend>
-					<div>
-						<label for="post_title">Title</label>
-						<input type="text" name="post[title]" id="post_title" placeholder="Put your title here" />
-					</div>
-					<div>
-						<label for="post_body">Message</label>
-						<textarea cols="22" name="post[body]" id="post_body" placeholder="Write something in here"></textarea>
-					</div>
-					<input type="hidden" name="post[type]" value="tweet" />
-					<input type="hidden" name="post[status]" value="public" />
-					<footer>
-						<button type="submit">Post</button>
-					</footer>
-				</fieldset>
-			</form>
-			<footer></footer>
-		</section>
 		<section id="info" class="tab_bar" style="display: none;">
 			<div class="view" id="display" style="display: none;">
 				<section>

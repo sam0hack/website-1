@@ -41,10 +41,9 @@ input[type="text"]{
 }
 form{
 	margin: 1em;
+	border-radius: 10px;
 }
 fieldset{
-	border: solid 1px white;
-	border-radius: 10px;
 	padding: 1em;
 }
 fieldset div{
@@ -68,6 +67,7 @@ body>footer nav{
 	height: 30px;
 }
 body article
+, #post
 , #post_list>footer{
 	border-radius: 8px 8px;
 	background: rgba(0,0,0,.8);
@@ -77,6 +77,9 @@ body article
 	padding: 1em;
 	position: relative;
 	min-height: 40px;
+}
+#post footer button{
+	float: right;
 }
 body article footer{
 	font-size: .8em;

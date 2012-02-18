@@ -203,18 +203,14 @@ view.post.prototype = {
 controller.post = function(delegate, m){
 	var self = controller.apply(this, [delegate, m]);
 	this.post = {body: "", publish_date: new Date()};
-	this.controller = null;
 	this.keyup_delegate = function(e){self.keyup(e);};
 	this.submit_delegate = function(e){self.submit(e);};
 	this.load_view = function(){
 		var self = this;
 		this.view = new view.post(document.getElementById("post"), this, this.model);
 		this.view.container.querySelector("textarea").addEventListener(chin.device.KEYUP, this.keyup_delegate, true);
-		this.view.container.querySelector("form").addEventListener(chin.device.SUBMIT, this.submit_delegate, true);
-		this.model.title = "Write a post";
-		this.controller = new chin.controller.draggable(this, this.model);
-		this.controller.load_view();
-		this.view.hidden = false;
+		this.view.container.addEventListener(chin.device.SUBMIT, this.submit_delegate, true);
+		this.view.show();
 	};
 	var release = this.release;
 	this.release = function(){
@@ -232,15 +228,16 @@ controller.post.prototype = {
 	keyup: function(e){
 		this.post.body = e.target.value;
 		this.post.publish_date = new Date();
+		this.post.type = this.view.container.querySelector("input[name='post[type]']").value;
+		this.post.status = this.view.container.querySelector("input[name='post[status]']").value;
 	}
 	, submit: function(e){
 		e.preventDefault();
 		var posts = this.model.posts;
 		posts.push(this.post);
 		this.model.posts = posts;
+		this.delegate.save_post(this.post);
 		this.post = {body: "", publish_date: new Date()};
-		this.delegate.save_post(this.post.body);
-		this.controller.close();
 		posts = null;
 	}
 };
@@ -596,7 +593,6 @@ controller.settings.prototype = {
 (function(){
 	var app = (function(){
 		var edit_link = document.getElementById("edit_link");
-		var post_link = document.getElementById("post_link");
 		var tab_bar_controller = null;
 		var post_controller = null;
 		var home_controller = null;
@@ -624,8 +620,6 @@ controller.settings.prototype = {
 			post = new model.post(JSON.parse(post));
 		}
 		post.posts = posts;
-		home_controller = new controller.home(this, settings);
-		home_controller.load_view();
 		var self = {
 			add_subview: function(view){
 			}
@@ -656,10 +650,6 @@ controller.settings.prototype = {
 					edit_link.innerHTML = "Done";
 				}
 			}
-			, post_link_clicked: function(e){
-				post_controller = new controller.post(this, post);
-				post_controller.load_view();
-			}
 			, add_user_message: function(message){
 				var aside = chin.dom(tab_bar_controller.view.container.querySelector("aside"));
 				aside.elem.innerHTML += message + "<br />";
@@ -682,8 +672,12 @@ controller.settings.prototype = {
 			}
 			, application_did_finish_launching: function(){
 				if(!edit_link) return;
+				home_controller = new controller.home(this, settings);
+				home_controller.load_view();
+				post_controller = new controller.post(this, post);
+				post_controller.load_view();
+
 				edit_link.addEventListener("click", edit_click_delegate, true);
-				post_link.addEventListener("click", post_click_delegate, true);
 				settings.subscribe("background_url", this);
 				settings.subscribe("active_tab_id", this);
 				settings.subscribe("position", this);
@@ -695,7 +689,7 @@ controller.settings.prototype = {
 			}
 			, get_csrf_token: function(){
 				var csrf_token_field = document.querySelector("input[name=_csrf_token]");
-				return {_csrf_token: csrf_token_field.value};
+				return csrf_token_field.value;
 			}
 			, update: function(key, old, value, obj){
 				if(obj instanceof model.post){
@@ -720,7 +714,8 @@ controller.settings.prototype = {
 					document.body.style["background-image"] = null;
 				}
 			}
-			, save_post: function(e){
+			, save_post: function(post){
+				chin.log(post);
 				var url = chin.root_url() + "posts.json";
 				var xhr = new XMLHttpRequest();
 				var self = this;
@@ -739,20 +734,24 @@ controller.settings.prototype = {
 					}
 					user_message.style.display = "block";
 					setTimeout(function(){
-						//user_message.style.display = "none";
-					}, 2000);
+						user_message.style.display = "none";
+					}, 3000);
 				}, true);
-				var fields = post_controller.view.container.querySelectorAll("input, textarea");
+				//var fields = post_controller.view.container.querySelectorAll("input, textarea");
 				var data = [];
-				var ubounds = fields.length;
+				/*var ubounds = fields.length;
 				for(i=0;i<ubounds;i++){
 					if(fields[i].value.length > 0){
 						if(fields[i].type === "checkbox"){
 							if(fields[i].checked) data.push(fields[i].name + "=" + fields[i].value);
 						}else data.push(fields[i].name + "=" + encodeURIComponent(fields[i].value));
 					}
-				}
-
+				}*/
+				data.push("post[body]=" + encodeURIComponent(post.body));
+				data.push("post[publish_date]=" + post.publish_date);
+				data.push("post[status]=" + post.status);
+				data.push("post[type]=" + post.type);
+				data.push("_csrf_token=" + this.get_csrf_token());
 				xhr.open("POST", url);
 				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 				xhr.send(data.join("&"));
@@ -822,7 +821,6 @@ controller.settings.prototype = {
 		var settings_controller = null;
 		var photo_browser_controller = null;
 		var edit_click_delegate = function(e){self.edit_link_clicked();};
-		var post_click_delegate = function(e){self.post_link_clicked(e);};
 		self.application_did_finish_launching();
 		return self;
 	})();
