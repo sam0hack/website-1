@@ -3,7 +3,7 @@
 	<header><h1><?php echo post::get_title($most_recent_post);?></h1></header>
 	<div><?php echo post::get_body($most_recent_post);?></div>
 	<footer>
-		<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
+		<time datetime="<?php echo gmdate("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo gmdate("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
 		<?php if(auth_controller::is_authed() && auth_controller::$current_user->id === $most_recent_post->owner_id):?>
 		<form method="post" action="<?php echo app_resource::url_for_member("posts");?>" class="delete">
 			<input type="hidden" name="_method" value="delete" />
@@ -23,7 +23,7 @@
 		<header><h2><?php echo post::get_title($post);?></h2></header>
 		<div><?php echo post::get_body($post);?></div>
 		<footer>
-			<time datetime="<?php echo date("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo date("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
+			<time datetime="<?php echo gmdate("Y-m-d", $most_recent_post->publish_date);?> GMT" pubdate><?php echo gmdate("M D Y g:i:s", $most_recent_post->publish_date);?> GMT</time>
 			<?php if(auth_controller::is_authed() && auth_controller::$current_user->id === $post->owner_id):?>
 			<form method="post" action="<?php echo app_resource::url_for_member("posts");?>" class="delete">
 				<input type="hidden" name="_method" value="delete" />
