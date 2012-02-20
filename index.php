@@ -83,7 +83,7 @@ class repo{
 				view::set_user_message($error);
 			}
 		}
-		$member = filter_center::publish("after_saving_member", $this, $post);
+		$member = filter_center::publish("after_saving_member", $this, $member);
 	}
 }
 class widget_controller{
