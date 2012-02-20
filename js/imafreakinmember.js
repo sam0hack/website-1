@@ -198,6 +198,9 @@ view.post.prototype = {
 	update: function(key, old, v, m){
 		chin.log([key, old, v]);
 	}
+	, clear: function(){
+		this.container.querySelector("textarea").value = "";
+	}
 };
 
 controller.post = function(delegate, m){
@@ -239,6 +242,7 @@ controller.post.prototype = {
 		this.delegate.save_post(this.post);
 		this.post = {body: "", publish_date: new Date()};
 		posts = null;
+		this.view.clear();
 	}
 };
 controller.tweet_list = function(delegate, m){
@@ -715,7 +719,6 @@ controller.settings.prototype = {
 				}
 			}
 			, save_post: function(post){
-				chin.log(post);
 				var url = chin.root_url() + "posts.json";
 				var xhr = new XMLHttpRequest();
 				var self = this;
@@ -734,7 +737,7 @@ controller.settings.prototype = {
 					}
 					user_message.style.display = "block";
 					setTimeout(function(){
-						user_message.style.display = "none";
+						//user_message.style.display = "none";
 					}, 3000);
 				}, true);
 				//var fields = post_controller.view.container.querySelectorAll("input, textarea");
@@ -753,7 +756,7 @@ controller.settings.prototype = {
 				data.push("post[type]=" + post.type);
 				data.push("_csrf_token=" + this.get_csrf_token());
 				xhr.open("POST", url);
-				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 				xhr.send(data.join("&"));
 			}
 			, save_settings: function(e){

@@ -39,20 +39,6 @@ class post extends model{
 		if($post->settings !== null) return $post->settings->summary;
 		return $post->body;
 	}
-	static function get_title($post){
-		if($post->title !== null) return $post->title;
-		$doc = new SimpleXMLElement(sprintf("<?xml version='1.0'?><document>%s</document>", $post->body));
-		return $doc->h1;
-	}
-	static function get_body($post){
-		$doc = DOMDocument::loadHTML(sprintf("<html>%s</html>", $post->body));
-		$xpath = new DOMXPath($doc);
-		$h1 = $xpath->query("//h1");
-		if($h1->length >= 1){
-			$h1->item(0)->parentNode->removeChild($h1->item(0));
-		}
-		return $doc->saveHTML();
-	}
 	private $_tags;
 	function get_tags(){
 		if(count($this->_tags) > 0) return $this->_tags;

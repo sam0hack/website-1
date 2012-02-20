@@ -50,6 +50,8 @@ class repo{
 		return resource::get_absolute_path("sixd.sqlite");
 	}
 	function should_save_post($publisher, $post){
+		if(strpos($post->body, chr(13) . chr(10)) > -1) $post->body = str_replace(chr(13) . chr(10), chr(10), $post->body);
+		$post = filter_center::publish("before_saving_post", $this, $post);
 		$tags = $post->get_tags();
 		$db = new storage(array("table_name"=>"posts"));
 		$list = $db->save(array($post));
@@ -58,18 +60,18 @@ class repo{
 			$tags[$i]->post_id = $list[0][0]->id;
 		}
 		$db->save($tags);
+		$post = filter_center::publish("after_saving_post", $this, $post);
 	}
 	function should_delete_post($publisher, $post){
+		$post = filter_center::publish("before_deleting_post", $this, $post);
 		$tags_db = new storage(array("table_name"=>"post_tags"));
 		$db = new storage(array("table_name"=>"posts"));
 		$tags_db->delete(array("post_id"=>(int)$post->id, "owner_id"=>(int)$post->owner_id), "post_id=:post_id and owner_id=:owner_id");
 		$db->delete(array("id"=>(int)$post->id, "owner_id"=>(int)$post->owner_id), "ROWID=:id and owner_id=:owner_id");
-	}
-	function should_save_story($publisher, $story){
-		$db = new storage(array("table_name"=>"stories"));
-		$db->save(array($story));
+		$post = filter_center::publish("after_deleting_post", $this, $post);
 	}
 	function should_save_member($publisher, $member){
+		$member = filter_center::publish("before_saving_member", $this, $post);
 		if($member->settings() !== null){
 			$member->settings = json_encode($member->settings());
 		}
@@ -81,6 +83,7 @@ class repo{
 				view::set_user_message($error);
 			}
 		}
+		$member = filter_center::publish("after_saving_member", $this, $post);
 	}
 }
 class widget_controller{
@@ -111,11 +114,10 @@ filter_center::subscribe("should_set_js_path", null, new theme_controller());
 filter_center::subscribe("before_including_resource_file", null, new custom_resources());
 filter_center::subscribe("before_rendering_view", null, new custom_resources());
 filter_center::subscribe("need_storage_connection_string", null, new repo());
-$plugin_controller = new plugin_controller();
 filter_center::subscribe("before_rendering_view", null, new widget_controller());
 filter_center::subscribe("will_need_site_title", null, new site());
 filter_center::subscribe("parsing_url", null, new site());
-filter_center::subscribe("before_rendering_view", null, $plugin_controller);
+filter_center::subscribe("before_rendering_view", null, "plugin_controller::before_rendering_view");
 filter_center::subscribe("before_rendering_view", null, new theme_controller());
 filter_center::subscribe("should_set_css_path", null, new theme_controller());
 filter_center::subscribe("end_request", null, new output_compressor());
@@ -124,7 +126,7 @@ filter_center::subscribe("setting_parameter_from_request", null, new object_popu
 notification_center::subscribe("begin_request", null, new site());
 notification_center::subscribe("before_calling_http_method", null, new auth_controller());
 notification_center::subscribe("begin_request", null, new auth_controller());
-notification_center::subscribe("begin_request", null, $plugin_controller);
+notification_center::subscribe("begin_request", null, "plugin_controller::begin_request");
 $r = new repo();
 notification_center::subscribe("should_save_post", null, $r);
 notification_center::subscribe("should_delete_post", null, $r);

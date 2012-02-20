@@ -395,7 +395,11 @@ class filter_center{
 	static function publish($name, $publisher, $info){
 		if(!array_key_exists($name, self::$observers)) return $info;
 		foreach(self::$observers[$name] as $observer){
-			$info = $observer->{$name}($publisher, $info);
+			if(is_string($observer) || get_class($observer) === "Closure"){
+				$info = call_user_func($observer, $publisher, $info);
+			}else{
+				$info = $observer->{$name}($publisher, $info);
+			}
 		}
 		return $info;
 	}
@@ -408,7 +412,11 @@ class notification_center{
 	static function publish($name, $publisher, $info){
 		if(!array_key_exists($name, self::$observers)) return;
 		foreach(self::$observers[$name] as $observer){
-			$observer->{$name}($publisher, $info);
+			if(is_string($observer) || get_class($observer) === "Closure"){
+				call_user_func($observer, $publisher, $info);				
+			}else{
+				$observer->{$name}($publisher, $info);
+			}
 		}
 	}
 	static function subscribe($name, $publisher, $subscriber){
@@ -576,7 +584,7 @@ class theme_controller{
 }
 class plugin_controller{
 	static $plugins;
-	function begin_request($publisher, $info){
+	static function begin_request($publisher, $info){
 		self::$plugins = array();
 		$path = resource::get_absolute_path("plugins/*");
 		$folders = glob($path);
@@ -590,7 +598,7 @@ class plugin_controller{
 			}
 		}
 	}
-	function before_rendering_view($publisher, $view){
+	static function before_rendering_view($publisher, $view){
 		$plugin_name = get_class($publisher);
 		$result = array_filter(self::$plugins, function($item) use($plugin_name){
 			return strpos($item, $plugin_name) !== false;
