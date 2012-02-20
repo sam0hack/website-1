@@ -71,7 +71,7 @@ class repo{
 		$post = filter_center::publish("after_deleting_post", $this, $post);
 	}
 	function should_save_member($publisher, $member){
-		$member = filter_center::publish("before_saving_member", $this, $post);
+		$member = filter_center::publish("before_saving_member", $this, $member);
 		if($member->settings() !== null){
 			$member->settings = json_encode($member->settings());
 		}
