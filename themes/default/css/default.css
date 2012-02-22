@@ -125,7 +125,7 @@ body>header>h1{
 }
 body>header h1
 , body>header p{
-	font-family: "Bowlby One SC", cursive;
+	/*font-family: "Bowlby One SC", cursive;*/
 }
 body>header p{
 	font-size: 2em;
