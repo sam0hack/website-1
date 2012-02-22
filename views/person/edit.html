@@ -24,7 +24,7 @@
 		</fieldset>
 	</form>
 	<?php if($person->id > 0):?>
-	<form action="<?php echo App::url_for("person");?>" method="post" onsubmit="return confirm('Are you sure you want to delete?');">
+	<form action="<?php echo app_resource::url_for_user("person");?>" method="post" onsubmit="return confirm('Are you sure you want to delete?');">
 		<input type="hidden" value="<?php echo $person->id;?>" name="person[id]" />
 		<input type="hidden" value="delete" name="_method" />
 		<button type="submit">Delete</button>

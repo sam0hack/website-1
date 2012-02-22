@@ -25,7 +25,7 @@ class person_resource extends app_resource{
 	function POST(person $person = null){
 		$this->person = new person();
 		if($person !== null){
-			$this->person = storage::find_people_one(array("where"=>"owner_id=:owner_id and ROWID=:id", "args"=>array("owner_id"=>auth_controller::$current_user->id)));			
+			$this->person = storage::find_people_one(array("where"=>"owner_id=:owner_id and ROWID=:id", "args"=>array("owner_id"=>auth_controller::$current_user->id, "id"=>(int)$person->id)));			
 		}
 		$view = "person/edit";
 		$this->output = view::render($view, $this);

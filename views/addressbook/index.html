@@ -10,8 +10,9 @@
 			<?php foreach($people as $person):?>
 				<dd>
 					<a href="http://<?php echo $person->profile->url;?>" title="<?php echo $person->name;?>"><?php echo $person->name;?></a>
-					<form method="post" action="<?php echo app_resource::url_for_user("person/{$person->id}");?>">
-						
+					<form method="post" action="<?php echo app_resource::url_for_user("person");?>">
+						<input type="hidden" value="<?php echo $person->id;?>" name="person[id]" />
+						<button type="submit">Edit</button>
 					</form>
 				</dd>
 			<?php endforeach;?>
