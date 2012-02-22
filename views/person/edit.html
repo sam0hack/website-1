@@ -1,0 +1,33 @@
+<article>
+	<form id="person" action="<?php echo app_resource::url_for_member((int)$person->id > 0 ? "person" : "people");?>" method="post">
+		<fieldset>
+			<legend>Editing: <?php echo $person->name;?></legend>
+			<p>
+				<label for="person[name]">Name</label>
+				<input type="text" name="person[name]" id="person[name]" value="<?php echo $person->name;?>" autocomplete="off" />
+			</p>
+			<p>
+				<label for="profile_email">Email</label>
+				<input type="text" name="profile[email]" id="profile_email" value="<?php echo $person->profile->email;?>" autocomplete="off" />
+			</p>
+			<p>
+				<label for="profile_url">Url</label>
+				<input id="profile_url" name="profile[url]" type="text" value="<?php echo $person->profile->url;?>" />
+			</p>
+	<?php if($person->id > 0):?>
+			<input type="hidden" value="<?php echo $person->id;?>" name="person[id]" />
+			<input type="hidden" value="put" name="_method" />
+	<?php endif;?>
+			<footer>
+				<button type="submit"><?php echo $person->id > 0 ? "Save" : "Add";?></button>
+			</footer>
+		</fieldset>
+	</form>
+	<?php if($person->id > 0):?>
+	<form action="<?php echo App::url_for("person");?>" method="post" onsubmit="return confirm('Are you sure you want to delete?');">
+		<input type="hidden" value="<?php echo $person->id;?>" name="person[id]" />
+		<input type="hidden" value="delete" name="_method" />
+		<button type="submit">Delete</button>
+	</form>
+	<?php endif;?>
+</article>

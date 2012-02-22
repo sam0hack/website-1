@@ -27,7 +27,7 @@ class post_resource extends app_resource{
 		$this->output = view::render($view, $this);
 		return layout::render("default", $this);
 	}
-	function PUT(post $post, $tags = null){
+	function PUT(post $post, $tags = null, $summary = null){
 		$post->owner_id = (int)auth_controller::$current_user->id;
 		if(strlen($post->publish_date) === 0) $post->publish_date = null;
 		$post->url = strlen($post->url) === 0 ?  post::make_url($post) : post::sanitize_url($post);

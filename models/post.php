@@ -20,6 +20,13 @@ class post extends model{
 	public $type;
 	public $settings;
 	public $url;
+	static function sanitize($key, $value){
+		if($key === "title") return filter_var($value, FILTER_SANITIZE_STRING);
+		if($key === "type") return filter_var($value, FILTER_SANITIZE_STRING);
+		if($key === "status") return filter_var($value, FILTER_SANITIZE_STRING);
+		if($key === "url") return filter_var($value, FILTER_SANITIZE_URL);
+		return $value;
+	}
 	
 	private $_settings;
 	static function find($sql, $obj){

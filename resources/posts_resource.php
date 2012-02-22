@@ -16,7 +16,7 @@ class posts_resource extends app_resource{
 		$this->output = view::render("post/index", $this, array("posts"=>$posts));
 		return layout::render("default", $this);			
 	}
-	function POST(post $post){
+	function POST(post $post, $summary = null){
 		$post->owner_id = (int)auth_controller::$current_user->id;
 		if(strlen($post->publish_date) === 0) $post->publish_date = null;
 		if(!is_numeric($post->publish_date)) $post->publish_date = strtotime($post->publish_date);

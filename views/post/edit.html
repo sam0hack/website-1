@@ -23,8 +23,8 @@
 				<textarea name="post[body]" placeholder="Body"><?php echo $post->body;?></textarea>
 			</div>
 			<div>
-				<label for="post[excerpt]">Excerpt</label>
-				<textarea name="post[excerpt]" placeholder="Excerpt"><?php echo $post->excerpt;?></textarea>
+				<label for="summary">Summary</label>
+				<textarea name="summary" placeholder="Summary"><?php echo $post->settings()->summary;?></textarea>
 			</div>
 			<div>
 				<label for="post[url]">Url</label>

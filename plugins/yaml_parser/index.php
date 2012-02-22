@@ -8,7 +8,7 @@ class yaml_parser{
 			$post->title = property_exists($obj, "title") ? $obj->title : $post->title;
 			$post->publish_date = property_exists($obj, "publish_date") ? $obj->publish_date : $post->publish_date;
 			$post->type = property_exists($obj, "type") ? $obj->type : $post->type;
-			$post->excerpt = property_exists($obj, "excerpt") ? $obj->excerpt : $post->excerpt;
+			$post->summary = property_exists($obj, "summary") ? $obj->summary : $post->summary;
 			if(property_exists($obj, "tags")){
 				$tags = array_map(function($item){
 					return new post_tag(array("name"=>$item));

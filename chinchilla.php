@@ -1,6 +1,10 @@
 <?php
+function elseset($a, $b){
+	if($a === null) return $b;
+	return $a;
+}
 class output_compressor{
-	function end_request($publisher, $output){
+	static function end_request($publisher, $output){
 		// Need to NOT strip whitespace for requests like images (jpg, png, gif).
 		if(!in_array($publisher->url->file_type, array("html", "xml", "json", "js", "phtml"))) return $output;
 		return string::strip_whitespace($output);
@@ -85,7 +89,7 @@ class not_found_exception extends Exception{
 }
 class auth_controller{
 	static $current_user;
-	function before_calling_http_method($publisher, $info){
+	static function before_calling_http_method($publisher, $info){
 		$secured = array("members", "posts");
 		if(in_array($publisher->resource_name, $secured)){
 			if(self::get_chin_auth() === null){
@@ -95,7 +99,7 @@ class auth_controller{
 			}
 		}
 	}
-	function begin_request($publisher, $info){
+	static function begin_request($publisher, $info){
 		self::$current_user = storage::find_members_one(array("where"=>"hash=:hash", "args"=>array("hash"=>self::get_chin_auth())));
 	}	
 	private static function create_key($name, $expiry){
@@ -132,19 +136,15 @@ class auth_controller{
 }
 
 class magic_quotes_remover{
-	function setting_parameter_from_request($publisher, $info){
-		// Return null if it is because stripslashes returns an empty string for null.
-		if($info === null) return $info;
-		if(is_object($info) || is_array($info)) return $info;
-		return self::execute($info);
-	}
 	static function execute($value){
+		if($value === null) return $value;
+		if(is_object($value) || is_array($value)) return $value;
 		if(function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) return stripslashes($value);
 		return $value;
 	}
 }
 class object_populator_from_request{
-	function setting_parameter_from_request($param, $info){
+	static function setting_parameter_from_request($param, $info){
 		if($info === null) return $info;
 		$reflector = $param->getClass();
 		if($reflector === null) return $info;
@@ -155,6 +155,7 @@ class object_populator_from_request{
 			if(!$reflector->hasProperty($key)) continue;
 			$property = $reflector->getProperty($key);
 			if(!$property->isPublic()) continue;
+			if(method_exists($reflector->getName(), "sanitize")) $obj->{$key} = call_user_func($reflector->getName()."::sanitize", $key, $value);
 			$obj->{$key} = magic_quotes_remover::execute($value);
 		}
 		return $obj;
@@ -166,7 +167,7 @@ class request_argument_mapper{
 			$value = null;
 			$name = $param->getName();
 			if(array_key_exists($name, $request->request)){
-				$value = $request->request[$name];
+				$value = magic_quotes_remover::execute($request->request[$name]);
 			}else if(array_key_exists($name, $request->files)){
 				$value = $request->files[$name];
 			}
@@ -217,6 +218,7 @@ class url_parser{
 	public $request;
 	public $file_type;
 	public $resource_name;
+	public $params;
 	function parse($request){
 		$this->request = $request;
 		$this->file_type = "html";
@@ -235,10 +237,10 @@ class url_parser{
 			$this->resource_name = str_replace(".$this->file_type", "", $this->resource_name);
 		}
 		if(strpos($this->resource_name, "/") !== false){
-			$parts = explode("/", $this->resource_name);
-			$this->resource_name = $parts[0];
+			$this->params = explode("/", $this->resource_name);
+			$this->resource_name = $this->params[0];
 		}
-		return (object)array("resource_name"=>$this->resource_name, "request"=>$this->request, "file_type"=>$this->file_type);
+		return (object)array("params"=>$this->params, "resource_name"=>$this->resource_name, "request"=>$this->request, "file_type"=>$this->file_type);
 	}
 	static function get_r($request){
 		return array_key_exists("r", $request->request) && strlen($request->request["r"]) > 0 ? $request->request["r"] : "index";
@@ -556,7 +558,7 @@ class theme_controller{
 		if(count($setting) > 0) $theme = $setting[0]->value;
 		return $theme;
 	}
-	function before_rendering_view($publisher, $info){
+	static function before_rendering_view($publisher, $info){
 		$view = $info;
 		$theme = array((object)array("value"=>"default"));
 		try{
@@ -571,12 +573,12 @@ class theme_controller{
 		$theme = self::get_theme();
 		return resource::url_for("themes/$theme/$file", $data);
 	}
-	function should_set_css_path($publisher, $info){
+	static function should_set_css_path($publisher, $info){
 		$path = "themes/" . self::get_theme() . "/$info";
 		if(file_exists($path)) return $path;
 		return $info;
 	}
-	function should_set_js_path($publisher, $info){
+	static function should_set_js_path($publisher, $info){
 		$path = "themes/" . self::get_theme() . "/$info";
 		if(file_exists($path)) return $path;
 		return $info;
