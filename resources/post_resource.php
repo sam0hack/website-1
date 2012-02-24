@@ -1,5 +1,6 @@
 <?php
 class_exists("post") || require("models/post.php");
+class_exists("setting") || require("models/setting.php");
 class_exists("app_resource") || require("app_resource.php");
 class post_resource extends app_resource{
 	function __construct($request, $url){
@@ -27,13 +28,20 @@ class post_resource extends app_resource{
 		$this->output = view::render($view, $this);
 		return layout::render("default", $this);
 	}
-	function PUT(post $post, $tags = null, $summary = null){
-		$post->owner_id = (int)auth_controller::$current_user->id;
-		if(strlen($post->publish_date) === 0) $post->publish_date = null;
-		$post->url = strlen($post->url) === 0 ?  post::make_url($post) : post::sanitize_url($post);
-		if(!is_numeric($post->publish_date)) $post->publish_date = strtotime($post->publish_date);
-		$post->modified = gmmktime();
-		$post->created = gmmktime();
+	function PUT(post $post, $meta = array(), $tags = null){
+		$this->post = storage::find_posts_one(array("where"=>"owner_id=:owner_id and ROWID=:id", "args"=>array("owner_id"=>auth_controller::$current_user->id, "id"=>(int)$post->id)));
+		if($this->post === null){
+			view::set_user_message("Not Found");
+			$this->status = new http_status(array("code"=>404, "message"=>"Post not found."));
+			notification_center::publish("post_not_found", $this, $post);
+			return;
+		}
+		$this->post->title = $post->title;
+		$this->post->body = $post->body;
+		if(strlen($post->publish_date) === 0) $this->post->publish_date = null;
+		$this->post->url = strlen($post->url) === 0 ?  post::make_url($post) : post::sanitize_url($post);
+		if(!is_numeric($this->post->publish_date)) $this->post->publish_date = strtotime($this->post->publish_date);
+		$this->post->modified = gmmktime();
 		$post_tags = array();
 		if(strlen($tags) > 0){
 			$tags = array_map(function($item){
@@ -58,11 +66,11 @@ class post_resource extends app_resource{
 			}
 			foreach($tags as $key=>$tag){
 				$post_tags[] = new post_tag(array("name"=>$tag, "owner_id"=>$post->owner_id));
-			}			
-			$post->set_tags($post_tags);
+			}
+			$this->post->set_tags($post_tags);
 		}
-		notification_center::publish("should_save_post", $this, $post);
-		$this->post = $post;
+		$this->post->meta = new meta($meta);		
+		notification_center::publish("should_save_post", $this, $this->post);
 		if(in_array($this->url->file_type, array("html"))) self::redirect($this->post->url);
 		$this->output = view::render("post/show", $this);
 		return layout::render("default", $this);

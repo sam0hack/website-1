@@ -51,6 +51,9 @@ class repo{
 	static function should_save_post($publisher, $post){
 		if(strpos($post->body, chr(13) . chr(10)) > -1) $post->body = str_replace(chr(13) . chr(10), chr(10), $post->body);
 		$post = filter_center::publish("before_saving_post", null, $post);
+		if($post->meta !== null){
+			$post->meta = $post->meta->serialize();
+		}
 		$tags = $post->get_tags();
 		$db = new storage(array("table_name"=>"posts"));
 		$list = $db->save(array($post));

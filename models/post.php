@@ -1,6 +1,7 @@
 <?php
 class_exists("model") || require("model.php");
 class_exists("post_tag") || require("post_tag.php");
+class_exists("meta") || require("meta.php");
 class post extends model{
 	function __construct($args = array()){
 		$this->publish_date = gmmktime();
@@ -18,8 +19,21 @@ class post extends model{
 	public $modified;
 	public $owner_id;
 	public $type;
-	public $settings;
 	public $url;
+	
+	private $_meta;
+	function __get($key){
+		if($key === "meta") return $this->_meta !== null ? $this->_meta->deserialize() : new meta();
+	}
+	function __set($key, $value){
+		if($key === "meta"){
+			if(is_string($value)){
+				$this->_meta = json_decode($value);
+			}else{
+				$this->_meta = $value;
+			}
+		}
+	}
 	static function sanitize($key, $value){
 		if($key === "title") return filter_var($value, FILTER_SANITIZE_STRING);
 		if($key === "type") return filter_var($value, FILTER_SANITIZE_STRING);
@@ -27,15 +41,13 @@ class post extends model{
 		if($key === "url") return filter_var($value, FILTER_SANITIZE_URL);
 		return $value;
 	}
-	
-	private $_settings;
 	static function find($sql, $obj){
 		$db = new storage(array("table_name"=>"posts", "primary_key_field"=>"id"));
 		$posts = $db->query($sql, $obj, function($obj){
 			$props = get_object_vars($obj);
 			$new_object = new post();
 			foreach($props as $k=>$v){
-				if($k === "settings") $v = json_decode($v);
+				if($k === "meta") $v = json_decode($v);
 				$new_object->$k = $v;
 			}
 			return $new_object;
@@ -43,7 +55,7 @@ class post extends model{
 		return $posts;
 	}
 	static function summary($post){
-		if($post->settings !== null) return $post->settings->summary;
+		if($post->meta !== null) return $post->meta->summary;
 		return $post->body;
 	}
 	private $_tags;
