@@ -1,5 +1,6 @@
 <?php
 class_exists("post") || require("models/post.php");
+class_exists("meta") || require("models/meta.php");
 class_exists("setting") || require("models/setting.php");
 class_exists("app_resource") || require("app_resource.php");
 class post_resource extends app_resource{
@@ -36,6 +37,7 @@ class post_resource extends app_resource{
 			notification_center::publish("post_not_found", $this, $post);
 			return;
 		}
+		
 		$this->post->title = $post->title;
 		$this->post->body = $post->body;
 		if(strlen($post->publish_date) === 0) $this->post->publish_date = null;
@@ -69,7 +71,7 @@ class post_resource extends app_resource{
 			}
 			$this->post->set_tags($post_tags);
 		}
-		$this->post->meta = new meta($meta);		
+		$this->post->meta = meta::serialize($meta);
 		notification_center::publish("should_save_post", $this, $this->post);
 		if(in_array($this->url->file_type, array("html"))) self::redirect($this->post->url);
 		$this->output = view::render("post/show", $this);

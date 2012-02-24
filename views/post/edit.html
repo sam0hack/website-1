@@ -24,7 +24,7 @@
 			</div>
 			<div>
 				<label for="summary">Summary</label>
-				<textarea name="meta[summary]" id="summary" placeholder="Summary"><?php echo $post->meta->summary;?></textarea>
+				<textarea name="meta[summary]" id="summary" placeholder="Summary"><?php echo meta::deserialize($post->meta)->summary;?></textarea>
 			</div>
 			<div>
 				<label for="post[url]">Url</label>

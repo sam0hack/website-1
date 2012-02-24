@@ -21,19 +21,6 @@ class post extends model{
 	public $type;
 	public $url;
 	
-	private $_meta;
-	function __get($key){
-		if($key === "meta") return $this->_meta !== null ? $this->_meta->deserialize() : new meta();
-	}
-	function __set($key, $value){
-		if($key === "meta"){
-			if(is_string($value)){
-				$this->_meta = json_decode($value);
-			}else{
-				$this->_meta = $value;
-			}
-		}
-	}
 	static function sanitize($key, $value){
 		if($key === "title") return filter_var($value, FILTER_SANITIZE_STRING);
 		if($key === "type") return filter_var($value, FILTER_SANITIZE_STRING);

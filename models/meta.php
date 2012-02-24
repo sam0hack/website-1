@@ -14,10 +14,10 @@ class meta{
 		return $value;
 	}
 	
-	function serialize(){
-		return json_encode($this);
+	static function serialize($value){
+		return json_encode($value);
 	}
-	function deserialize(){
-		return json_decode($this);
+	static function deserialize($value){
+		return json_decode($value);
 	}
 }
