@@ -2,8 +2,8 @@
 	<title><?php echo $title;?></title>
 	<description><?php echo $description;?></description>
 	<link>http://www.joeyguerra.com/index.rss</link>
-	<lastBuildDate>Tue, 20 Mar 2012 8:06:00 +0000</lastBuildDate>
-	<pubDate>Tue, 20 Mar 2012 8:06:00 +0000</pubDate>
+	<lastBuildDate><?php echo gmdate("Y-m-d\TH:i:s\Z", time());?> GMT</lastBuildDate>
+	<pubDate><?php echo gmdate("Y-m-d\TH:i:s\Z", time());?> GMT</pubDate>
 	<ttl>1800</ttl>
 	<?php foreach($posts as $post):?>
 	<item>
