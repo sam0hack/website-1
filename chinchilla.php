@@ -340,6 +340,7 @@ eos;
 	}
 	static function content_type($file_type){
 		if($file_type === "html") return "text/html;charset=UTF-8";
+		if($file_type === "rss") return "application/rss+xml;charset=UTF-8";
 		if($file_type === "phtml") return "text/html;charset=UTF-8";
 		if($file_type === "xml") return "text/xml;charset=UTF-8";
 		if($file_type === "json") return "application/json;charset=UTF-8";

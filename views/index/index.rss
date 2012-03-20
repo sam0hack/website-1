@@ -1,0 +1,17 @@
+<channel>
+	<title><?php echo $title;?></title>
+	<description><?php echo $description;?></description>
+	<link>http://www.joeyguerra.com/index.rss</link>
+	<lastBuildDate>Tue, 20 Mar 2012 8:06:00 +0000</lastBuildDate>
+	<pubDate>Tue, 20 Mar 2012 8:06:00 +0000</pubDate>
+	<ttl>1800</ttl>
+	<?php foreach($posts as $post):?>
+	<item>
+			<title><?php echo $post->title;?></title>
+			<description><?php echo $post->body;?></description>
+			<link><?php echo app_resource::url_for_member($post->url);?></link>
+			<guid><?php echo $post->url;?></guid>
+			<pubDate><?php echo gmdate("Y-m-d\TH:i:s\Z", $post->publish_date);?> GMT</pubDate>
+	</item>
+	<?php endforeach;?>
+</channel>
