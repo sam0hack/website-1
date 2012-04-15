@@ -30,7 +30,6 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 1;
-	padding: 1em;
 }
 ol, ul {
 	list-style: none;
@@ -51,6 +50,8 @@ table {
 /* App styles*/
 body{
 	font: normal normal 16px/21px Arial, sans-serif;
+	background: black;
+	color: white;
 }
 header{
 	width: 100%;
@@ -59,15 +60,19 @@ header{
 article{
 	position: relative;
 }
+footer{
+	height: 20px;
+}
 input[type="text"]{
 	width: 100%;
 	border: none;
 	padding: 5px 0 5px 0;
+	height: 100%;
 }
 article button{
 	position: absolute;
 	top: 0;
-	right: 0;
+	right: 10px;
 	border-radius: 20px;
 	border: solid 1px transparent;
 }
@@ -81,18 +86,21 @@ li{
 	position: relative;
 	height: 4em;
 }
+li:nth-child(odd) input[type="text"]{
+	background: #ccc;
+}
 li input[type="text"]{
 	width: 85%;
-	margin: 0 0 0 15%;
+	margin: 0;
 }
 li button{
 	position: absolute;
 	top:0;
-	left: 5px;
+	right: 0;
 	border-radius: 20px;
 	height: 50px;
 	width: 35px;
-	-webkit-transform: rotate(-15deg); 
+	-webkit-transform: rotate(-15deg);
 	-moz-transform: rotate(-15deg);
 	transform: rotate(-15deg);
 }

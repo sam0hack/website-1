@@ -193,7 +193,7 @@
 	};
 	controllers.list.prototype.click = function(e){
 		if(e.target.type && e.target.type === "submit"){
-			var todo = this.model.find(parseInt(e.target.id));
+			var todo = this.model.find(parseInt(e.target.id.replace("done_", "")));
 			todo.done = !todo.done;
 			storage.save_todo(todo);
 		}
@@ -377,12 +377,12 @@
 		var doneButton = document.createElement("button");
 		doneButton.type = "button";
 		doneButton.innerHTML = todo.done ? "o" : "x";
-		doneButton.id = todo.timestamp;
+		doneButton.id = "done_" + todo.timestamp;
 		field.value = todo.content;
 		field.type = "text";
 		field.id = todo.timestamp;
-		item.appendChild(doneButton);
 		item.appendChild(field);
+		item.appendChild(doneButton);
 		item.className = todo.done ? "done" : "";
 		this.container.appendChild(item);
 		return item;
@@ -391,7 +391,7 @@
 		this.stats.innerHTML = count + " items left.";
 	};
 	views.list.prototype["done"] = function(old, v, m){
-		var button = document.getElementById(m.timestamp);
+		var button = document.getElementById("done_" + m.timestamp);
 		button.parentNode.className = v ? "done" : "";
 		button.parentNode.querySelector("input").disabled = v ? true : false;
 		button.innerHTML = v ? "o" : "x";
