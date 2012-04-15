@@ -1,81 +1,107 @@
-p {
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
 	margin: 0;
 	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
 }
-.view {
-	width: 480px;
-	margin: 0 auto 40px;
-	background: white;
-	padding: 0;
-	box-shadow: rgba(0, 0, 0, 0.2) 0 3px 7px 0;
-	border-radius: 0 0 5px 5px;
-}
-.view header, .view article {
-	padding: 0 40px;
-}
-.view header h1 {
-	font-size: 36px;
-	font-weight: bold;
-	text-align: center;
-	padding: 20px 0 30px 0;
-	line-height: 1;
-	color: black;
-}
-.view article {
-	position: relative;
-}
-.view header, .view article {
-	padding: 0 40px;
-}
-input[type="text"] {
-	font-size: 1.5em;
-	width: 100%;
-}
-.view .tip {
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
 	display: block;
-	position: absolute;
-	top: .5em;
-	right: -4em;
-	background: black;
-	color: white;
-	border-radius: 5px;
-	padding: .3em .5em .3em .5em;
-	font-size: .8em;
-	text-align: center;
-	box-shadow: 0 0 3px 1px rgba(0, 0, 0, .8);
-	border: solid 1px transparent;
 }
-ul {
-	margin: 0;
-	padding: 0;
+body {
+	line-height: 1;
+	padding: 1em;
+}
+ol, ul {
 	list-style: none;
 }
-li {
-	padding: 12px 20px 11px 0;
-	position: relative;
-	font-size: 24px;
-	line-height: 1.1em;
-	border-bottom: 1px solid #CCC;
+blockquote, q {
+	quotes: none;
 }
-li input[type="text"] {
-	font-size: 1em;
-	width: 90%;
-	border: solid 1px transparent;
-	margin-left: .5em;
-	background: transparent;
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
 }
-.view footer {
-	position: relative;
-	background: none repeat scroll 0 0 #F4FCE8;
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	border-top: 1px solid #EDEDED;
-	color: #555;
-	line-height: 36px;
-	margin-top: 10px;
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* App styles*/
+body{
+	font: normal normal 16px/21px Arial, sans-serif;
+}
+header{
 	width: 100%;
-	height: 36px;
+	text-align: center;
 }
-.view footer p {
-	padding-left: 1em;
+article{
+	position: relative;
 }
+input[type="text"]{
+	width: 100%;
+	border: none;
+	padding: 5px 0 5px 0;
+}
+article button{
+	position: absolute;
+	top: 0;
+	right: 0;
+	border-radius: 20px;
+	border: solid 1px transparent;
+}
+.done{
+	opacity: .5;
+}
+.done input[type="text"]{
+	text-decoration: line-through;
+}
+li{
+	position: relative;
+	height: 4em;
+}
+li input[type="text"]{
+	width: 85%;
+	margin: 0 0 0 15%;
+}
+li button{
+	position: absolute;
+	top:0;
+	left: 5px;
+	border-radius: 20px;
+	height: 50px;
+	width: 35px;
+	-webkit-transform: rotate(-15deg); 
+	-moz-transform: rotate(-15deg);
+	transform: rotate(-15deg);
+}
+button:active{
+	background: black;
+	color: white;
+}
+/* fonts*/
+input, button{
+	font-size: 1.5em;
+}
+

@@ -252,8 +252,8 @@ class resource{
 		$this->request = $request;
 		$this->url = $url;
 		$this->resource_name = str_replace("_resource", "", get_class($this));
-		$this->css = $this->get_link_markup($this->resource_name);
-		$this->js = $this->get_script_markup($this->resource_name);
+		$this->css .= $this->get_link_markup($this->resource_name);
+		$this->js .= $this->get_script_markup($this->resource_name);
 		$this->status = new http_status(array("code"=>200, "message"=>"Ok"));
 		$this->title = settings::site_title();
 		$this->description = "Chinchilla, a RESTful library";
@@ -304,6 +304,7 @@ class resource{
 eos;
 	}
 	function get_script_markup($name){
+		if(strpos($name, 'http') !== false) return '<script type="text/javascript" src="' . $name . '"></script>';
 		$path = "js/$name.js";
 		$path = filter_center::publish("should_set_js_path", $this, $path);
 		if(!file_exists($path)) return null;

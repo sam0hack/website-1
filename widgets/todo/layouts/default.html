@@ -1,8 +1,12 @@
 <!doctype html>
 <html>
 	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 		<title>Todo Widget</title>
 		<?php echo $css;?>
+		<link href="<?php echo resource::url_for("css/bootstrap.min.css");?>" rel="stylsheet" />
+		<link href="<?php echo resource::url_for("css/bootstrap-responsive.min.css");?>" rel="stylsheet" />	    
 	</head>
 	<body>
 		<?php echo $output;?>

@@ -80,13 +80,54 @@
 			}
 		}
 	}
-	function todo(){
+	function todo(obj){
 		model.apply(this, []);
-		this.timestamp = (new Date()).getTime();
-		this.order = 0;
-		this.done = false;
-		this.editing = false;
-		this.content = null;
+		if(!obj) obj = {};
+		var timestamp = obj.timestamp ? obj.timestamp : (new Date()).getTime();
+		this.__defineGetter__("timestamp", function(){
+			return timestamp;
+		});
+		this.__defineSetter__("timestamp", function(v){
+			var old = timestamp;
+			timestamp = v;
+			this.changed("timestamp", old, v);
+		});
+		var order = obj.order ? obj.order : 0;
+		this.__defineGetter__("order", function(){
+			return order;
+		});
+		this.__defineSetter__("order", function(v){
+			var old = order;
+			order = v;
+			this.changed("order", old, v);
+		});
+		var done = obj.done ? obj.done : false;
+		this.__defineGetter__("done", function(){
+			return done;
+		});
+		this.__defineSetter__("done", function(v){
+			var old = done;
+			done = v;
+			this.changed("done", old, v);
+		});
+		var editing = obj.editing ? obj.editing : false;
+		this.__defineGetter__("editing", function(){
+			return editing;
+		});
+		this.__defineSetter__("editing", function(v){
+			var old = editing;
+			editing = v;
+			this.changed("editing", old, v);
+		});
+		var content = obj.content ? obj.content : null;
+		this.__defineGetter__("content", function(){
+			return content;
+		});
+		this.__defineSetter__("content", function(v){
+			var old = content;
+			content = v;
+			this.changed("content", old, v);
+		});
 		return this;
 	}
 	function settings(){
@@ -151,13 +192,10 @@
 		this.view.select_next(e.target);
 	};
 	controllers.list.prototype.click = function(e){
-		if(e.target.type && e.target.type === "checkbox"){
-			var t = new todo();
-			t.timestamp = parseInt(e.target.id);
-			this.model.pop(t);
-			if(this.settings.persist){
-				storage.remove_todo(t);
-			}
+		if(e.target.type && e.target.type === "submit"){
+			var todo = this.model.find(parseInt(e.target.id));
+			todo.done = !todo.done;
+			storage.save_todo(todo);
 		}
 	};
 	
@@ -298,8 +336,13 @@
 		this.settings = model.settings;
 		this.model.subscribe("todos.push", this);
 		this.model.subscribe("todos.pop", this);
+		var ubounds = this.model.length();
+		var i = 0;
+		for(i=0; i < ubounds; i++){
+			this.model.item(i).subscribe("done", this);
+		}
 		this.controller.view = this;
-		this.controller.model = this.model;		
+		this.controller.model = this.model;
 		return this;
 	}
 	views.list.prototype.select_next = function(elem){
@@ -331,25 +374,35 @@
 	views.list.prototype.add = function(todo){
 		var item = document.createElement("li");
 		var field = document.createElement("input");
-		var checkbox = document.createElement("input");
-		checkbox.type = "checkbox";
-		checkbox.id = todo.timestamp;
+		var doneButton = document.createElement("button");
+		doneButton.type = "button";
+		doneButton.innerHTML = todo.done ? "o" : "x";
+		doneButton.id = todo.timestamp;
 		field.value = todo.content;
 		field.type = "text";
 		field.id = todo.timestamp;
+		item.appendChild(doneButton);
 		item.appendChild(field);
-		item.appendChild(checkbox);
+		item.className = todo.done ? "done" : "";
 		this.container.appendChild(item);
 		return item;
 	};
 	views.list.prototype.update_stats = function(count){
 		this.stats.innerHTML = count + " items left.";
 	};
+	views.list.prototype["done"] = function(old, v, m){
+		var button = document.getElementById(m.timestamp);
+		button.parentNode.className = v ? "done" : "";
+		button.parentNode.querySelector("input").disabled = v ? true : false;
+		button.innerHTML = v ? "o" : "x";
+	};
 	views.list.prototype["todos.push"] = function(old, v, m){
+		v.subscribe("done", this);
 		this.update_stats(m.length());
 		this.add(v);
 	};
 	views.list.prototype["todos.pop"] = function(old, v, m){
+		m.unsubscribe("done", this);
 		this.update_stats(m.length());
 		this.remove(v);
 	};
@@ -372,6 +425,9 @@
 	
 	function todos(list){
 		if(!list) list = [];
+		for(var i = 0; i < list.length; i++){
+			list[i] = new todo(list[i]);
+		}
 		var self = {
 			push: function(todo){
 				var found = false;
@@ -407,7 +463,7 @@
 			, find: function(id){
 				id = parseInt(id);
 				for(i in list){
-					if(id === list[i].timestamp) return list[i];
+					if(id === list[i].timestamp) return this.item(i);
 				}
 				return null;
 			}
