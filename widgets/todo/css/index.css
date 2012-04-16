@@ -50,12 +50,20 @@ table {
 /* App styles*/
 body{
 	font: normal normal 16px/21px Arial, sans-serif;
-	background: black;
+	background: #207cca; /* Old browsers */
+	background: -moz-linear-gradient(top,  #207cca 0%, #89caff 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#207cca), color-stop(100%,#89caff)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #207cca 0%,#89caff 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #207cca 0%,#89caff 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #207cca 0%,#89caff 100%); /* IE10+ */
+	background: linear-gradient(top,  #207cca 0%,#89caff 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#207cca', endColorstr='#89caff',GradientType=0 ); /* IE6-9 */
 	color: white;
 }
 header{
 	width: 100%;
 	text-align: center;
+	display: none;
 }
 article{
 	position: relative;
@@ -63,11 +71,17 @@ article{
 footer{
 	height: 20px;
 }
+article ul{
+}
 input[type="text"]{
 	width: 100%;
 	border: none;
 	padding: 5px 0 5px 0;
 	height: 100%;
+	background-color: transparent;
+	color: white;
+	outline: none;
+	cursor: default;
 }
 article button{
 	position: absolute;
@@ -85,19 +99,13 @@ article button{
 li{
 	position: relative;
 	height: 4em;
-}
-li:nth-child(odd) input[type="text"]{
-	background: #ccc;
+	border-bottom: solid 1px #f2f2f2;
 }
 li input[type="text"]{
 	width: 85%;
 	margin: 0;
 }
 li button{
-	position: absolute;
-	top:0;
-	right: 0;
-	border-radius: 20px;
 	height: 50px;
 	width: 35px;
 	-webkit-transform: rotate(-15deg);

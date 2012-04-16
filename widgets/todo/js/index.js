@@ -36,6 +36,11 @@
 			justjavascriptmvc.todos = todos;
 			window.localStorage.justjavascriptmvc = JSON.stringify(justjavascriptmvc);
 		}
+		, save: function(todos){
+			var justjavascriptmvc = JSON.parse(window.localStorage.justjavascriptmvc);
+			justjavascriptmvc.todos = todos;
+			window.localStorage.justjavascriptmvc = JSON.stringify(justjavascriptmvc);
+		}
 		, save_todo: function(t){
 			var todos = this.todos();
 			for(var i = 0; i < todos.length; i++){
@@ -137,13 +142,80 @@
 	}
 	
 	/*Controllers namespace*/
-	var controllers = {};
-	
+	var DEVICE = (function(){
+		var self = {};
+		self.CANTOUCH = ("createTouch" in document);
+		self.MOUSEDOWN = self.CANTOUCH ? "touchstart" : "mousedown";
+		self.MOUSEMOVE = self.CANTOUCH ? "touchmove" : "mousemove";
+		self.MOUSEUP = self.CANTOUCH ? "touchend" : "mouseup";
+		self.CLICK = "click";
+		self.DOUBLECLICK = "dblclick";
+		self.KEYUP = "keyup";
+		self.SEARCH = "search";
+		self.INPUT = "input";
+		self.BLUR = "blur";
+		self.UNLOAD = "unload";
+		self.CHANGE = "change";
+		self.SCROLL = "scroll";
+		self.FOCUS = "focus";
+		self.SUBMIT = "submit";
+		return self;
+	})();
 	/*List controller*/
+	var controllers = {};
 	controllers.list = function(){
 		var view = null;
 		var model = null;
+		var self = this;
+		var mouseDownDelegate = function(e){self[DEVICE.MOUSEDOWN](e);};
+		var mouseUpDelegate = function(e){self[DEVICE.MOUSEUP](e);};
+		var mouseMoveDelegate = function(e){self[DEVICE.MOUSEMOVE](e);};
 		this.settings = null;
+		this.isSwiping = false;
+		var startY = 0;
+		var startX = 0;
+		var timer = null;
+		var xVelocity = 0;
+		var calculating = false;
+		var previousTime = null;
+		var shouldDelete = false;
+		this[DEVICE.MOUSEDOWN] = function(e){
+			this.isSwiping = true;
+			startY = e.targetTouches ? e.targetTouches[0].pageY : e.pageY;
+			startX = e.targetTouches ? e.targetTouches[0].pageY : e.pageX;
+			timer = (new Date()).getTime();
+			previousTime = timer;
+			view.container.addEventListener(DEVICE.MOUSEMOVE, mouseMoveDelegate, true);
+		};
+		this[DEVICE.MOUSEUP] = function(e){
+			this.isSwiping = false;
+			view.container.removeEventListener(DEVICE.MOUSEMOVE, mouseMoveDelegate, true);
+			timer = null;
+			previousTime = null;
+			if(shouldDelete && e.target && e.target.id && e.target.nodeName === "INPUT"){
+				var todo = this.model.find(parseInt(e.target.id));
+				this.model.pop(todo);
+				if(this.settings.persist) storage.save(this.model.items());
+			}
+		};
+		this[DEVICE.MOUSEMOVE] = function(e){
+			if(calculating) return;
+			calculating = true;
+			var yDeviation = e.pageY - startY;
+			var xDeviation = Math.abs(e.pageX - startX);
+			var now = (new Date()).getTime();
+			var previousXVelocity = xVelocity;
+			xVelocity = xDeviation / (now-timer);
+			var rate = Math.abs(xVelocity - previousXVelocity) / (now-previousTime);
+			//console.log([xDeviation, rate]);
+			if(xDeviation > 160 && e.target && e.target.id && e.target.nodeName === "INPUT"){
+				shouldDelete = true;
+			}
+			calculating = false;
+			previousTime = now;
+		};
+		
+		
 		this.__defineGetter__("view", function(){
 			return view;
 		});
@@ -153,6 +225,8 @@
 			view.container.addEventListener("blur", this, true);
 			view.container.addEventListener("keypress", this, true);
 			view.container.addEventListener("click", this, true);
+			view.container.addEventListener(DEVICE.MOUSEDOWN, mouseDownDelegate, true);
+			view.container.addEventListener(DEVICE.MOUSEUP, mouseUpDelegate, true);
 			model = v.model;
 			this.settings = v.settings;
 			if(model.length() > 0){
@@ -170,35 +244,36 @@
 		});
 		return this;
 	};
-	controllers.list.prototype.save = function(id, value){
-		for(var i = 0; i < this.model.length(); i++){
-			if(id === this.model.item(i).timestamp){
-				this.model.item(i).content = value;
-				if(this.settings.persist){
-					storage.save_todo(this.model.item(i));
+	controllers.list.prototype = {
+		save: function(id, value){
+			for(var i = 0; i < this.model.length(); i++){
+				if(id === this.model.item(i).timestamp){
+					this.model.item(i).content = value;
+					if(this.settings.persist){
+						storage.save_todo(this.model.item(i));
+					}
+					break;
 				}
-				break;
+			}
+		}
+		, handleEvent: function(e){
+			if(this[e.type]) this[e.type](e);
+		}
+		, blur: function(e){
+			this.save(parseInt(e.target.id), e.target.value);
+		}
+		, keypress: function(e){
+			if(e.which !== 13) return;
+			this.view.select_next(e.target);
+		}
+		, click: function(e){
+			if(e.target.type && e.target.type === "submit"){
+				var todo = this.model.find(parseInt(e.target.id.replace("done_", "")));
+				todo.done = !todo.done;
+				if(this.settings.persist) storage.save_todo(todo);
 			}
 		}
 	};
-	controllers.list.prototype.handleEvent = function(e){
-		if(this[e.type]) this[e.type](e);
-	};
-	controllers.list.prototype.blur = function(e){
-		this.save(parseInt(e.target.id), e.target.value);
-	};
-	controllers.list.prototype.keypress = function(e){
-		if(e.which !== 13) return;
-		this.view.select_next(e.target);
-	};
-	controllers.list.prototype.click = function(e){
-		if(e.target.type && e.target.type === "submit"){
-			var todo = this.model.find(parseInt(e.target.id.replace("done_", "")));
-			todo.done = !todo.done;
-			storage.save_todo(todo);
-		}
-	};
-	
 	/*Editing controller*/
 	controllers.editing = function(){
 		var view = null;
