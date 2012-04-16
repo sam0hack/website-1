@@ -207,8 +207,8 @@
 			var previousXVelocity = xVelocity;
 			xVelocity = xDeviation / (now-timer);
 			var rate = Math.abs(xVelocity - previousXVelocity) / (now-previousTime);
-			//console.log([xDeviation, rate]);
-			if(xDeviation > 160 && e.target && e.target.id && e.target.nodeName === "INPUT"){
+			console.log([xDeviation > 160, rate > .009]);
+			if(xDeviation > 160 && e.target && e.target.id && e.target.nodeName === "INPUT" && rate > .01){
 				shouldDelete = true;
 			}
 			calculating = false;
