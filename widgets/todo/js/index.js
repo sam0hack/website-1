@@ -192,11 +192,11 @@
 			view.container.removeEventListener(DEVICE.MOUSEMOVE, mouseMoveDelegate, true);
 			timer = null;
 			previousTime = null;
-			if(shouldDelete && e.target && e.target.id && e.target.nodeName === "INPUT"){
-				var todo = this.model.find(parseInt(e.target.id));
-				this.model.pop(todo);
-				if(this.settings.persist) storage.save(this.model.items());
-			}
+			if(!shouldDelete) return;
+			shouldDelete = false;
+			var todo = this.model.find(parseInt(e.target.id));
+			this.model.pop(todo);
+			if(this.settings.persist) storage.save(this.model.items());
 		};
 		this[DEVICE.MOUSEMOVE] = function(e){
 			if(calculating) return;
@@ -207,7 +207,7 @@
 			var previousXVelocity = xVelocity;
 			xVelocity = xDeviation / (now-timer);
 			var rate = Math.abs(xVelocity - previousXVelocity) / (now-previousTime);
-			console.log([xDeviation > 160, rate > .009]);
+			console.log([xDeviation, rate]);
 			if(xDeviation > 160 && e.target && e.target.id && e.target.nodeName === "INPUT" && rate > .01){
 				shouldDelete = true;
 			}
