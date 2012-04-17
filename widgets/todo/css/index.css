@@ -53,6 +53,9 @@ body{
 	background: black;
 	color: white;
 }
+button{
+	-webkit-appearance:none;
+}
 header{
 	width: 100%;
 	text-align: center;
