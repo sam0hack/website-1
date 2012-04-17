@@ -316,7 +316,7 @@
 	};
 	controllers.editing.prototype.keypress = function(e){
 		if(e.which !== 13) return;
-		this.add(this.view.value);
+		this.add(e.target.value);
 		e.target.value = "";
 	};
 	controllers.editing.prototype.click = function(e){
