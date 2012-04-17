@@ -396,7 +396,6 @@
 		if(this[key] === undefined) return;
 		this[key](old, v, m);
 	};
-	
 	/*list view*/
 	views.list = function(id, model, controller){
 		this.__defineGetter__("value", function(){
@@ -554,6 +553,7 @@
 	}
 	var editing_controller = new controllers.editing();
 	var editing = new views.editing("todoapp", {list: list, settings: s}, editing_controller);
+	editing.focus();
 	var todos_list = new views.list("todos", {list: list, settings: s}, new controllers.list());
 	var settings_view = new views.settings("settings.persist", s, new controllers.settings());
 })();
