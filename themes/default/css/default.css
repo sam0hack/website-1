@@ -70,7 +70,6 @@ body article
 , #post
 , #post_list>footer{
 	border-radius: 8px 8px;
-	background: rgba(0,0,0,.8);
 	color: white;
 	width: 560px;
 	margin: 3px auto;
@@ -109,6 +108,9 @@ nav a{
 	text-align: center;
 	text-transform: lowercase;
 }
+#post_list{
+	background: rgba(0,0,0,.8);
+}
 #post_list>footer nav a{
 	float: none;
 	margin: 0 auto;
@@ -138,6 +140,7 @@ body{
 	background: no-repeat center center fixed;
 	background-size: cover;
 }
+
 .draggable{
 	position: absolute;
 	top:0;
